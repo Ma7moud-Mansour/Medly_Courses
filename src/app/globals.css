@@ -1,0 +1,349 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8faf8;
+  --foreground: #0f172a;
+  --muted: #f2f6f4;
+  --muted-foreground: #5f6f6c;
+  --border: #e8eeec;
+  --primary: #0e5f5c;
+  --primary-foreground: #ffffff;
+  --accent: #c8a96b;
+  --accent-foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-strong: #dceeea;
+  --warning: #f4b942;
+  --danger: #dc4c3f;
+}
+
+html.dark {
+  --background: #071f1d;
+  --foreground: #eef8f5;
+  --muted: #0d2d29;
+  --muted-foreground: #a9c2bc;
+  --border: #21443f;
+  --surface: #0b2825;
+  --surface-strong: #123c36;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-cairo);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-cairo), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(14, 95, 92, 0.16);
+}
+
+a {
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.medical-grid {
+  background-image:
+    linear-gradient(rgba(14, 95, 92, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 95, 92, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.medly-hero-bg {
+  background:
+    linear-gradient(118deg, rgba(220, 238, 234, 0.78) 0%, rgba(248, 250, 248, 0.92) 36%, rgba(255, 255, 255, 0.88) 61%, rgba(238, 244, 242, 0.86) 100%),
+    linear-gradient(180deg, #f3f8f6 0%, #fbfcfb 58%, #f6faf8 100%);
+}
+
+.medly-landing-bg {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.92) 0 11rem, transparent 23rem),
+    radial-gradient(circle at 82% 10%, rgba(188, 229, 219, 0.68) 0 10rem, transparent 28rem),
+    linear-gradient(180deg, #dff4ef 0%, #eaf8f4 52%, #f8fbfa 100%);
+}
+
+.medly-card-shadow {
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+}
+
+html.dark .medical-grid {
+  background-image:
+    linear-gradient(rgba(190, 230, 221, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(190, 230, 221, 0.055) 1px, transparent 1px);
+}
+
+html.dark .medly-landing-bg {
+  background:
+    radial-gradient(circle at 16% 22%, rgba(26, 74, 67, 0.58) 0 10rem, transparent 25rem),
+    radial-gradient(circle at 82% 8%, rgba(38, 103, 93, 0.46) 0 11rem, transparent 30rem),
+    linear-gradient(180deg, #071f1d 0%, #0a2824 54%, #071f1d 100%);
+}
+
+html.dark header {
+  background: rgba(8, 28, 26, 0.94) !important;
+  border-color: rgba(78, 126, 117, 0.34) !important;
+}
+
+html.dark [class*="bg-white"],
+html.dark [class*="bg-[#f8fbfa]"],
+html.dark [class*="bg-[#f8faf8]"],
+html.dark [class*="bg-[#fbfcfb]"],
+html.dark [class*="bg-[#fbfcfc]"],
+html.dark [class*="bg-[#f9fcfb]"],
+html.dark [class*="bg-[#f9fbfb]"],
+html.dark [class*="bg-[#f5fbf9]"],
+html.dark [class*="bg-[#e9f7f2]"],
+html.dark [class*="bg-[#e9f8dd]"],
+html.dark [class*="bg-[#eef8f5]"],
+html.dark [class*="bg-[#dceeea]"],
+html.dark [class*="bg-[#f2f8f6]"],
+html.dark [class*="bg-[#f2f6f4]"],
+html.dark [class*="bg-[#fbf8ef]"],
+html.dark [class*="bg-surface"],
+html.dark [class*="bg-muted"] {
+  background-color: rgba(11, 40, 37, 0.88) !important;
+}
+
+html.dark [class*="text-[#0f172a]"],
+html.dark [class*="text-foreground"] {
+  color: #eef8f5 !important;
+}
+
+html.dark [class*="text-[#0e5f5c]"] {
+  color: #8ed7ca !important;
+}
+
+html.dark [class*="text-primary"] {
+  color: #8ed7ca !important;
+}
+
+html.dark [class*="text-[#415854]"],
+html.dark [class*="text-[#425a56]"],
+html.dark [class*="text-[#506662]"],
+html.dark [class*="text-[#536a66]"],
+html.dark [class*="text-[#5f6f6c]"],
+html.dark [class*="text-[#60736f]"],
+html.dark [class*="text-[#70827e]"],
+html.dark [class*="text-[#7a8784]"],
+html.dark [class*="text-[#8b9a97]"],
+html.dark [class*="text-muted-foreground"] {
+  color: #a9c2bc !important;
+}
+
+html.dark [class*="text-[#8a6a2f]"],
+html.dark [class*="text-[#c8a96b]"],
+html.dark [class*="text-accent"] {
+  color: #d7bd7a !important;
+}
+
+html.dark [class*="text-[#44750f]"] {
+  color: #9fd78b !important;
+}
+
+html.dark summary,
+html.dark p,
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark label,
+html.dark span {
+  border-color: rgba(78, 126, 117, 0.34);
+}
+
+html.dark [class*="border-[#"],
+html.dark [class*="border-border"] {
+  border-color: rgba(78, 126, 117, 0.34) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #88a6a0 !important;
+}
+
+html.dark .medly-card-shadow,
+html.dark .premium-panel {
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
+}
+
+.medly-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(132deg, rgba(14, 95, 92, 0.045) 0 1px, transparent 1px 84px),
+    linear-gradient(90deg, rgba(14, 95, 92, 0.10), transparent 28%, transparent 72%, rgba(200, 169, 107, 0.08));
+  opacity: 0.62;
+}
+
+.medly-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 9% 8% auto auto;
+  width: 42rem;
+  height: 42rem;
+  pointer-events: none;
+  border: 1px solid rgba(14, 95, 92, 0.08);
+  border-radius: 42% 58% 52% 48%;
+  transform: rotate(-12deg);
+}
+
+.medly-soft-curve {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(243, 247, 245, 0.46) 100%);
+}
+
+nextjs-portal,
+[data-nextjs-dialog-overlay],
+[data-nextjs-toast],
+[data-nextjs-dev-tools-button] {
+  display: none !important;
+}
+
+@keyframes medly-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medly-soft-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes medly-slide-preview {
+  from {
+    opacity: 0;
+    transform: translateX(-16px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+main section,
+main article,
+main aside {
+  animation: medly-fade-up 460ms ease both;
+}
+
+.hero-copy {
+  animation: medly-fade-up 620ms ease both;
+}
+
+.hero-preview {
+  animation: medly-slide-preview 700ms ease 120ms both;
+}
+
+main section:nth-of-type(2n),
+main article:nth-of-type(2n) {
+  animation-delay: 60ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+.focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-ring:focus-visible {
+  outline-color: var(--primary);
+}
+
+.form-input {
+  min-height: 2.75rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  padding-inline: 0.875rem;
+  color: var(--foreground);
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(14, 95, 92, 0.10);
+}
+
+html.dark .form-input {
+  border-color: rgba(78, 126, 117, 0.4);
+  background: rgba(11, 40, 37, 0.94);
+  color: #eef8f5;
+}
+
+html.dark .form-input::placeholder {
+  color: #88a6a0;
+}
+
+html.dark select.form-input option {
+  background: #0b2825;
+  color: #eef8f5;
+}
+
+html.dark .form-input:focus {
+  border-color: #58bfae;
+  box-shadow: 0 0 0 3px rgba(88, 191, 174, 0.16);
+}
+
+.premium-panel {
+  border: 1px solid rgba(232, 238, 236, 0.95);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.055);
+  backdrop-filter: blur(16px);
+}
+
+.lang-en {
+  font-family: Arial, Helvetica, sans-serif;
+}

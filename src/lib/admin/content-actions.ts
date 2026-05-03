@@ -1,0 +1,626 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { buildFeedbackPath, getActionErrorMessage } from "@/lib/actions/server-action-feedback";
+import { requireServerRole } from "@/lib/auth/server-session";
+import {
+  createAdminCourse,
+  createCourseLesson,
+  createCourseSection,
+  createLessonAttachment,
+  deleteLessonAttachment,
+  createAdminInstructor,
+  updateAdminInstructor,
+  deleteAdminCourse,
+  updateAdminCourse,
+  updateLessonAttachment,
+  updateCourseLesson,
+  updateCourseSection,
+} from "@/lib/content/repository";
+import {
+  adminAttachmentSchema,
+  adminCourseSchema,
+  adminInstructorSchema,
+  adminLessonSchema,
+  adminSectionSchema,
+} from "@/lib/validators/schemas";
+
+const CONTENT_ADMIN_ROLES = ["admin"] as const;
+
+function getCheckedValue(value: FormDataEntryValue | null) {
+  return value === "on" || value === "true" || value === "1";
+}
+
+function getOptionalText(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim();
+  return normalized || undefined;
+}
+
+function getOptionalNumber(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+// Keep validation, role checks, and cache revalidation at the server boundary
+// so admin content mutations stay predictable and secure.
+async function requireContentAdmin() {
+  return requireServerRole([...CONTENT_ADMIN_ROLES]);
+}
+
+export async function createAdminCourseAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  let destination = "/admin/courses/new";
+
+  try {
+    const parsed = adminCourseSchema.parse({
+      title: formData.get("title"),
+      slug: formData.get("slug"),
+      subtitle: formData.get("subtitle"),
+      description: formData.get("description"),
+      thumbnail: formData.get("thumbnail"),
+      price: formData.get("price"),
+      discountPrice: formData.get("discountPrice") || undefined,
+      categoryId: formData.get("categoryId"),
+      instructorId: formData.get("instructorId"),
+      level: formData.get("level"),
+      language: formData.get("language"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      featured: getCheckedValue(formData.get("featured")),
+      bestseller: getCheckedValue(formData.get("bestseller")),
+      examPrep: getCheckedValue(formData.get("examPrep")),
+    });
+
+    const course = await createAdminCourse({
+      adminId: actor.userId,
+      title: parsed.title,
+      slug: parsed.slug,
+      subtitle: parsed.subtitle || undefined,
+      description: parsed.description,
+      thumbnail: parsed.thumbnail,
+      price: parsed.price,
+      discountPrice: parsed.discountPrice,
+      categoryId: parsed.categoryId,
+      instructorId: parsed.instructorId,
+      level: parsed.level,
+      language: parsed.language || undefined,
+      isPublished: parsed.isPublished,
+      featured: parsed.featured,
+      bestseller: parsed.bestseller,
+      examPrep: parsed.examPrep,
+    });
+
+    revalidatePath("/admin/courses");
+    destination = buildFeedbackPath(`/admin/courses/${course.id}/edit`, {
+      flash: "course-created",
+    });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/courses/new", {
+      error: getActionErrorMessage(error, "Unable to create the course right now."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateAdminCourseAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminCourseSchema.parse({
+      title: formData.get("title"),
+      slug: formData.get("slug"),
+      subtitle: formData.get("subtitle"),
+      description: formData.get("description"),
+      thumbnail: formData.get("thumbnail"),
+      price: formData.get("price"),
+      discountPrice: formData.get("discountPrice") || undefined,
+      categoryId: formData.get("categoryId"),
+      instructorId: formData.get("instructorId"),
+      level: formData.get("level"),
+      language: formData.get("language"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      featured: getCheckedValue(formData.get("featured")),
+      bestseller: getCheckedValue(formData.get("bestseller")),
+      examPrep: getCheckedValue(formData.get("examPrep")),
+    });
+
+    await updateAdminCourse({
+      adminId: actor.userId,
+      courseId,
+      title: parsed.title,
+      slug: parsed.slug,
+      subtitle: parsed.subtitle || undefined,
+      description: parsed.description,
+      thumbnail: parsed.thumbnail,
+      price: parsed.price,
+      discountPrice: parsed.discountPrice,
+      categoryId: parsed.categoryId,
+      instructorId: parsed.instructorId,
+      level: parsed.level,
+      language: parsed.language || undefined,
+      isPublished: parsed.isPublished,
+      featured: parsed.featured,
+      bestseller: parsed.bestseller,
+      examPrep: parsed.examPrep,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "course-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to save the course changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function createCourseSectionAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminSectionSchema.parse({
+      courseId,
+      title: formData.get("title"),
+      description: formData.get("description"),
+      order: formData.get("order"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+    });
+
+    await createCourseSection({
+      adminId: actor.userId,
+      courseId,
+      title: parsed.title,
+      description: parsed.description || undefined,
+      order: parsed.order,
+      isPublished: parsed.isPublished,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "section-created" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to create the section."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateCourseSectionAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const sectionId = String(formData.get("sectionId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminSectionSchema.parse({
+      sectionId,
+      title: formData.get("title"),
+      description: formData.get("description"),
+      order: formData.get("order"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+    });
+
+    await updateCourseSection({
+      adminId: actor.userId,
+      sectionId,
+      title: parsed.title,
+      description: parsed.description || undefined,
+      order: parsed.order,
+      isPublished: parsed.isPublished,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "section-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to save the section changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+function readLessonVideo(formData: FormData) {
+  const playbackUrl = getOptionalText(formData.get("videoPlaybackUrl"));
+
+  if (!playbackUrl) {
+    return undefined;
+  }
+
+  return {
+    provider: String(formData.get("videoProvider") ?? "custom") as
+      | "local"
+      | "cloudinary"
+      | "uploadthing"
+      | "youtube"
+      | "vimeo"
+      | "bunny"
+      | "custom",
+    providerAssetId: getOptionalText(formData.get("videoProviderAssetId")),
+    fileName: getOptionalText(formData.get("videoFileName")),
+    mimeType: getOptionalText(formData.get("videoMimeType")),
+    fileSizeBytes: getOptionalNumber(formData.get("videoFileSizeBytes")),
+    playbackUrl,
+    thumbnailUrl: getOptionalText(formData.get("videoThumbnailUrl")),
+    durationSeconds: getOptionalNumber(formData.get("videoDurationSeconds")),
+    storageKey: getOptionalText(formData.get("videoStorageKey")),
+    visibilityStatus: String(formData.get("videoVisibilityStatus") ?? "ready") as
+      | "draft"
+      | "processing"
+      | "ready"
+      | "hidden",
+  };
+}
+
+export async function createCourseLessonAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const chapterId = String(formData.get("chapterId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminLessonSchema.parse({
+      chapterId,
+      title: formData.get("title"),
+      slug: formData.get("slug"),
+      order: formData.get("order"),
+      lessonType: formData.get("lessonType"),
+      summary: formData.get("summary"),
+      contentBody: formData.get("contentBody"),
+      durationMinutes: formData.get("durationMinutes"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      isPreview: getCheckedValue(formData.get("isPreview")),
+      quizRequired: getCheckedValue(formData.get("quizRequired")),
+      video: readLessonVideo(formData),
+    });
+
+    await createCourseLesson({
+      adminId: actor.userId,
+      chapterId,
+      title: parsed.title,
+      slug: parsed.slug,
+      order: parsed.order,
+      lessonType: parsed.lessonType,
+      summary: parsed.summary || undefined,
+      contentBody: parsed.contentBody || undefined,
+      durationMinutes: parsed.durationMinutes,
+      isPublished: parsed.isPublished,
+      isPreview: parsed.isPreview,
+      quizRequired: parsed.quizRequired,
+      video: parsed.video
+        ? {
+            provider: parsed.video.provider,
+            providerAssetId: parsed.video.providerAssetId || undefined,
+            fileName: parsed.video.fileName || undefined,
+            mimeType: parsed.video.mimeType || undefined,
+            fileSizeBytes: parsed.video.fileSizeBytes,
+            playbackUrl: parsed.video.playbackUrl || "",
+            thumbnailUrl: parsed.video.thumbnailUrl || undefined,
+            durationSeconds: parsed.video.durationSeconds,
+            storageKey: parsed.video.storageKey || undefined,
+            visibilityStatus: parsed.video.visibilityStatus,
+          }
+        : undefined,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "lesson-created" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to create the lesson."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateCourseLessonAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  const chapterId = String(formData.get("chapterId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminLessonSchema.parse({
+      lessonId,
+      chapterId,
+      title: formData.get("title"),
+      slug: formData.get("slug"),
+      order: formData.get("order"),
+      lessonType: formData.get("lessonType"),
+      summary: formData.get("summary"),
+      contentBody: formData.get("contentBody"),
+      durationMinutes: formData.get("durationMinutes"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      isPreview: getCheckedValue(formData.get("isPreview")),
+      quizRequired: getCheckedValue(formData.get("quizRequired")),
+      video: readLessonVideo(formData),
+    });
+
+    await updateCourseLesson({
+      adminId: actor.userId,
+      lessonId,
+      title: parsed.title,
+      slug: parsed.slug,
+      order: parsed.order,
+      lessonType: parsed.lessonType,
+      summary: parsed.summary || undefined,
+      contentBody: parsed.contentBody || undefined,
+      durationMinutes: parsed.durationMinutes,
+      isPublished: parsed.isPublished,
+      isPreview: parsed.isPreview,
+      quizRequired: parsed.quizRequired,
+      video: parsed.video
+        ? {
+            provider: parsed.video.provider,
+            providerAssetId: parsed.video.providerAssetId || undefined,
+            fileName: parsed.video.fileName || undefined,
+            mimeType: parsed.video.mimeType || undefined,
+            fileSizeBytes: parsed.video.fileSizeBytes,
+            playbackUrl: parsed.video.playbackUrl || "",
+            thumbnailUrl: parsed.video.thumbnailUrl || undefined,
+            durationSeconds: parsed.video.durationSeconds,
+            storageKey: parsed.video.storageKey || undefined,
+            visibilityStatus: parsed.video.visibilityStatus,
+          }
+        : undefined,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "lesson-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to save the lesson changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function createLessonAttachmentAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminAttachmentSchema.parse({
+      lessonId,
+      title: formData.get("title"),
+      fileName: formData.get("fileName"),
+      fileUrl: formData.get("fileUrl"),
+      storageKey: formData.get("storageKey"),
+      provider: formData.get("provider"),
+      mimeType: formData.get("mimeType"),
+      fileSizeBytes: formData.get("fileSizeBytes"),
+      order: formData.get("order"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      allowDownload: getCheckedValue(formData.get("allowDownload")),
+      visibilityStatus: formData.get("visibilityStatus"),
+    });
+
+    await createLessonAttachment({
+      adminId: actor.userId,
+      lessonId,
+      title: parsed.title || undefined,
+      fileName: parsed.fileName,
+      fileUrl: parsed.fileUrl,
+      storageKey: parsed.storageKey || undefined,
+      provider: parsed.provider,
+      mimeType: parsed.mimeType,
+      fileSizeBytes: parsed.fileSizeBytes,
+      order: parsed.order,
+      isPublished: parsed.isPublished,
+      allowDownload: parsed.allowDownload,
+      visibilityStatus: parsed.visibilityStatus,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "attachment-created" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to create the attachment."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateLessonAttachmentAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const attachmentId = String(formData.get("attachmentId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminAttachmentSchema.parse({
+      attachmentId,
+      lessonId,
+      title: formData.get("title"),
+      fileName: formData.get("fileName"),
+      fileUrl: formData.get("fileUrl"),
+      storageKey: formData.get("storageKey"),
+      provider: formData.get("provider"),
+      mimeType: formData.get("mimeType"),
+      fileSizeBytes: formData.get("fileSizeBytes"),
+      order: formData.get("order"),
+      isPublished: getCheckedValue(formData.get("isPublished")),
+      allowDownload: getCheckedValue(formData.get("allowDownload")),
+      visibilityStatus: formData.get("visibilityStatus"),
+    });
+
+    await updateLessonAttachment({
+      adminId: actor.userId,
+      attachmentId,
+      title: parsed.title || undefined,
+      fileName: parsed.fileName,
+      fileUrl: parsed.fileUrl,
+      storageKey: parsed.storageKey || undefined,
+      provider: parsed.provider,
+      mimeType: parsed.mimeType,
+      fileSizeBytes: parsed.fileSizeBytes,
+      order: parsed.order,
+      isPublished: parsed.isPublished,
+      allowDownload: parsed.allowDownload,
+      visibilityStatus: parsed.visibilityStatus,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "attachment-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to save the attachment changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteLessonAttachmentAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const attachmentId = String(formData.get("attachmentId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    await deleteLessonAttachment({
+      adminId: actor.userId,
+      attachmentId,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "attachment-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to delete the attachment."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function createAdminInstructorAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  let destination = "/admin/instructors";
+
+  try {
+    const parsed = adminInstructorSchema.parse({
+      name: formData.get("name"),
+      nameEn: formData.get("nameEn"),
+      slug: formData.get("slug"),
+      title: formData.get("title"),
+      titleEn: formData.get("titleEn"),
+      avatar: formData.get("avatar"),
+      bio: formData.get("bio"),
+      bioEn: formData.get("bioEn"),
+      specialization: formData.get("specialization"),
+      specializationEn: formData.get("specializationEn"),
+      vodafoneCashNumber: formData.get("vodafoneCashNumber"),
+    });
+
+    await createAdminInstructor({
+      adminId: actor.userId,
+      ...parsed,
+    });
+
+    revalidatePath("/admin/instructors");
+    destination = buildFeedbackPath("/admin/instructors", { flash: "instructor-created" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/instructors/new", {
+      error: getActionErrorMessage(error, "Unable to create instructor."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateAdminInstructorAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const instructorId = String(formData.get("instructorId") ?? "");
+  const editPath = `/admin/instructors/${instructorId}/edit`;
+  let destination = editPath;
+
+  try {
+    const parsed = adminInstructorSchema.parse({
+      name: formData.get("name"),
+      nameEn: formData.get("nameEn"),
+      slug: formData.get("slug"),
+      title: formData.get("title"),
+      titleEn: formData.get("titleEn"),
+      avatar: formData.get("avatar"),
+      bio: formData.get("bio"),
+      bioEn: formData.get("bioEn"),
+      specialization: formData.get("specialization"),
+      specializationEn: formData.get("specializationEn"),
+      vodafoneCashNumber: formData.get("vodafoneCashNumber"),
+    });
+
+    await updateAdminInstructor({
+      adminId: actor.userId,
+      instructorId,
+      ...parsed,
+    });
+
+    revalidatePath("/admin/instructors");
+    revalidatePath(editPath);
+    destination = buildFeedbackPath(editPath, { flash: "instructor-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to save instructor changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteAdminCourseAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  let destination = "/admin/courses";
+
+  try {
+    await deleteAdminCourse({
+      adminId: actor.userId,
+      courseId,
+    });
+
+    revalidatePath("/admin/courses");
+    destination = buildFeedbackPath("/admin/courses", { flash: "course-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(`/admin/courses/${courseId}/edit`, {
+      error: getActionErrorMessage(error, "Unable to delete course."),
+    });
+  }
+
+  redirect(destination);
+}

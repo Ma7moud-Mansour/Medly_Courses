@@ -1,0 +1,54 @@
+{
+  "name": "medly",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "delivery:start": "next start --hostname 0.0.0.0 --port 3000",
+    "lint": "eslint",
+    "db:start": "powershell -ExecutionPolicy Bypass -File ./scripts/db-start.ps1",
+    "db:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/db-stop.ps1",
+    "db:status": "powershell -ExecutionPolicy Bypass -File ./scripts/db-status.ps1",
+    "prisma:generate": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:push": "prisma db push",
+    "prisma:seed": "node prisma/seed.mjs"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@node-rs/argon2": "^2.0.2",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "clsx": "^2.1.1",
+    "jose": "^6.2.2",
+    "lucide-react": "^1.8.0",
+    "next": "16.2.4",
+    "nodemailer": "^8.0.5",
+    "pg": "^8.20.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.72.1",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "prisma": "^7.7.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

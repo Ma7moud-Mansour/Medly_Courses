@@ -148,7 +148,7 @@ export const adminCourseSchema = z.object({
 export const adminSectionSchema = z.object({
   courseId: z.string().min(1).optional(),
   sectionId: z.string().min(1).optional(),
-  title: z.string().trim().min(2, "Enter a section title"),
+  title: z.string().trim().min(2, "اكتب اسم الوحدة."),
   titleEn: z.string().trim().max(240).optional().or(z.literal("")),
   description: z.string().trim().max(500).optional().or(z.literal("")),
   descriptionEn: z.string().trim().max(500).optional().or(z.literal("")),
@@ -178,9 +178,9 @@ export const adminUploadSchema = z.object({
 export const adminLessonSchema = z.object({
   lessonId: z.string().min(1).optional(),
   chapterId: z.string().min(1),
-  title: z.string().trim().min(2, "Enter a lesson title"),
+  title: z.string().trim().min(2, "اكتب اسم الدرس."),
   titleEn: z.string().trim().max(240).optional().or(z.literal("")),
-  slug: z.string().trim().min(2, "Enter a valid slug"),
+  slug: z.string().trim().min(2, "اكتب اسم الدرس."),
   order: z.coerce.number().int().min(1).max(999),
   lessonType: z.enum(["video", "text", "pdf", "attachment", "quiz"]),
   summary: z.string().trim().max(280).optional().or(z.literal("")),

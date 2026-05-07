@@ -426,7 +426,10 @@ function NewLessonForm({
   courseId: string;
 }) {
   return (
-    <form action={createCourseLessonAction} className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4">
+    <form
+      action={createCourseLessonAction}
+      className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4 [&>div:nth-of-type(2)>label:nth-of-type(2)]:hidden [&>div:nth-of-type(2)>label:nth-of-type(3)]:hidden"
+    >
       <UploadSubmitGuard />
       <input name="courseId" type="hidden" value={courseId} />
       <input name="chapterId" type="hidden" value={section.id} />
@@ -445,7 +448,7 @@ function NewLessonForm({
         </label>
         <label className="grid gap-2 text-sm font-bold">
           Slug
-          <input className="form-input" name="slug" required />
+          <input className="form-input" name="slug" />
         </label>
         <label className="grid gap-2 text-sm font-bold">
           الترتيب
@@ -634,7 +637,10 @@ export function CourseCurriculumEditor({
         </p>
       </div>
 
-      <form action={createCourseSectionAction} className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4">
+      <form
+        action={createCourseSectionAction}
+        className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4 [&>div:nth-of-type(2)>div]:hidden [&>div:nth-of-type(2)>label:nth-of-type(2)]:hidden [&>label]:hidden"
+      >
         <input name="courseId" type="hidden" value={course.course.id} />
 
         <div>

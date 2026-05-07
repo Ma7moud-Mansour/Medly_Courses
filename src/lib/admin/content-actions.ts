@@ -82,7 +82,7 @@ export async function createAdminCourseAction(formData: FormData) {
   try {
     const parsed = adminCourseSchema.parse({
       title: formData.get("title"),
-      slug: formData.get("slug"),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
       subtitle: formData.get("subtitle") ?? "",
       description: formData.get("description"),
       thumbnail: formData.get("thumbnail"),
@@ -145,7 +145,7 @@ export async function updateAdminCourseAction(formData: FormData) {
   try {
     const parsed = adminCourseSchema.parse({
       title: formData.get("title"),
-      slug: formData.get("slug"),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
       subtitle: formData.get("subtitle") ?? "",
       description: formData.get("description"),
       thumbnail: formData.get("thumbnail"),
@@ -228,7 +228,7 @@ export async function createCourseSectionAction(formData: FormData) {
     destination = buildFeedbackPath(editPath, { flash: "section-created" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
-      error: getActionErrorMessage(error, "Unable to create the section."),
+      error: getActionErrorMessage(error, "تعذر إنشاء الوحدة."),
     });
   }
 
@@ -265,7 +265,7 @@ export async function updateCourseSectionAction(formData: FormData) {
     destination = buildFeedbackPath(editPath, { flash: "section-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
-      error: getActionErrorMessage(error, "Unable to save the section changes."),
+      error: getActionErrorMessage(error, "تعذر حفظ تعديلات الوحدة."),
     });
   }
 
@@ -393,7 +393,7 @@ export async function createCourseLessonAction(formData: FormData) {
     destination = buildFeedbackPath(editPath, { flash: "lesson-created" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
-      error: getActionErrorMessage(error, "Unable to create the lesson."),
+      error: getActionErrorMessage(error, "تعذر إنشاء الدرس."),
     });
   }
 
@@ -459,7 +459,7 @@ export async function updateCourseLessonAction(formData: FormData) {
     destination = buildFeedbackPath(editPath, { flash: "lesson-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
-      error: getActionErrorMessage(error, "Unable to save the lesson changes."),
+      error: getActionErrorMessage(error, "تعذر حفظ تعديلات الدرس."),
     });
   }
 

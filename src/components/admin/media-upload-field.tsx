@@ -53,6 +53,7 @@ export function MediaUploadField({
   fieldNames,
   className,
   required,
+  showManualVideoFields = true,
 }: {
   kind: AdminUploadKind;
   label: string;
@@ -63,6 +64,7 @@ export function MediaUploadField({
   fieldNames: UploadFieldNames;
   className?: string;
   required?: boolean;
+  showManualVideoFields?: boolean;
 }) {
   const resolvedHint = hint ?? helper;
   const [asset, setAsset] = useState<UploadValue>({
@@ -228,7 +230,7 @@ export function MediaUploadField({
         ) : null}
         {error ? <p className="text-xs font-bold text-danger">{error}</p> : null}
 
-        {kind === "video" ? (
+        {kind === "video" && showManualVideoFields ? (
           <div className="grid gap-3 border-t border-border pt-3 md:grid-cols-[1fr_220px]">
             <label className="grid gap-2 text-sm font-bold">
               رابط فيديو خارجي

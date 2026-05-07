@@ -764,7 +764,7 @@ export async function createAdminCategoryAction(formData: FormData) {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: formData.get("slug"),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
       description: formData.get("description"),
       descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),
@@ -804,7 +804,7 @@ export async function updateAdminCategoryAction(formData: FormData) {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: formData.get("slug"),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
       description: formData.get("description"),
       descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),

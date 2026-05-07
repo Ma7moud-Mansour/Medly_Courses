@@ -428,33 +428,33 @@ function NewLessonForm({
   return (
     <form
       action={createCourseLessonAction}
-      className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4 [&>div:nth-of-type(2)>label:nth-of-type(2)]:hidden [&>div:nth-of-type(2)>label:nth-of-type(3)]:hidden"
+      className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4"
     >
       <UploadSubmitGuard />
       <input name="courseId" type="hidden" value={courseId} />
       <input name="chapterId" type="hidden" value={section.id} />
 
       <div>
-        <h4 className="text-base font-black">إضافة درس</h4>
+        <h4 className="text-base font-black">إضافة فيديو شرح</h4>
         <p className="text-xs text-muted-foreground">
-          ابدأ ببيانات الدرس الأساسية، ثم أضف الفيديو أو الملف إذا احتجت.
+          اكتب اسم الدرس وارفع الفيديو فقط. باقي الإعدادات يتم ضبطها تلقائيًا.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-bold">
-          عنوان الدرس
-          <input className="form-input" name="title" required />
+          اسم الدرس
+          <input className="form-input" name="title" placeholder="مثال: شرح الفصل الأول" required />
         </label>
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="hidden">
           Slug
           <input className="form-input" name="slug" />
         </label>
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="hidden">
           الترتيب
           <input className="form-input" defaultValue={section.lessons.length + 1} min="1" name="order" required type="number" />
         </label>
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="hidden">
           نوع الدرس
           <select className="form-input" defaultValue="video" name="lessonType" required>
             <option value="video">فيديو</option>
@@ -468,16 +468,16 @@ function NewLessonForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-bold">
-          ملخص
-          <input className="form-input" name="summary" />
+          ملخص اختياري
+          <input className="form-input" name="summary" placeholder="اكتب ملاحظة قصيرة لو محتاج" />
         </label>
-        <label className="grid gap-2 text-sm font-bold">
+        <label className="hidden">
           المدة بالدقائق
           <input className="form-input" defaultValue={15} min="0" name="durationMinutes" required type="number" />
         </label>
       </div>
 
-      <label className="grid gap-2 text-sm font-bold">
+      <label className="hidden">
         المحتوى النصي / الملاحظات
         <textarea className="form-input min-h-28 py-3" name="contentBody" />
       </label>
@@ -501,12 +501,13 @@ function NewLessonForm({
             fileSizeBytes: "videoFileSizeBytes",
             durationSeconds: "videoDurationSeconds",
           }}
-          hint="يمكنك الرفع الآن أو العودة لاحقًا بعد إنشاء الدرس."
+          hint="بعد اختيار الفيديو انتظر حتى يظهر اسم الملف، ثم اضغط حفظ."
           kind="video"
-          label="فيديو الدرس"
+          label="فيديو الشرح"
+          showManualVideoFields={false}
         />
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="hidden">
           <label className="grid gap-2 text-sm font-bold">
             معرف الملف لدى المزود
             <input className="form-input" name="videoProviderAssetId" placeholder="اختياري" />
@@ -524,6 +525,7 @@ function NewLessonForm({
 
         <MediaUploadField
           accept="image/jpeg,image/png,image/webp"
+          className="hidden"
           fieldNames={{ url: "videoThumbnailUrl" }}
           hint="صورة ثابتة اختيارية للفيديو."
           kind="thumbnail"
@@ -531,14 +533,14 @@ function NewLessonForm({
         />
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="hidden">
         <ToggleField defaultChecked label="منشور" name="isPublished" />
         <ToggleField label="درس تجريبي" name="isPreview" />
         <ToggleField label="اختبار مطلوب" name="quizRequired" />
       </div>
 
       <button className="min-h-10 rounded-lg border border-border px-4 text-sm font-black" type="submit">
-        إنشاء الدرس
+        حفظ الدرس والفيديو
       </button>
     </form>
   );

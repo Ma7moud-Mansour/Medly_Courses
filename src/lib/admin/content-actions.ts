@@ -752,20 +752,25 @@ export async function createAdminCategoryAction(formData: FormData) {
   try {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
+      nameEn: formData.get("nameEn"),
       slug: formData.get("slug"),
       description: formData.get("description"),
+      descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),
     });
 
     await createAdminCategory({
       adminId: actor.userId,
       name: parsed.name,
+      nameEn: parsed.nameEn || undefined,
       slug: parsed.slug,
       description: parsed.description || undefined,
+      descriptionEn: parsed.descriptionEn || undefined,
       icon: parsed.icon || undefined,
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     revalidatePath("/courses");
     revalidatePath("/categories");
     revalidatePath(`/categories/${parsed.slug}`);
@@ -787,8 +792,10 @@ export async function updateAdminCategoryAction(formData: FormData) {
   try {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
+      nameEn: formData.get("nameEn"),
       slug: formData.get("slug"),
       description: formData.get("description"),
+      descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),
     });
 
@@ -796,12 +803,15 @@ export async function updateAdminCategoryAction(formData: FormData) {
       adminId: actor.userId,
       categoryId,
       name: parsed.name,
+      nameEn: parsed.nameEn || undefined,
       slug: parsed.slug,
       description: parsed.description || undefined,
+      descriptionEn: parsed.descriptionEn || undefined,
       icon: parsed.icon || undefined,
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     revalidatePath("/courses");
     revalidatePath("/categories");
     revalidatePath(`/categories/${parsed.slug}`);
@@ -827,6 +837,7 @@ export async function deleteAdminCategoryAction(formData: FormData) {
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     revalidatePath("/courses");
     revalidatePath("/categories");
     destination = buildFeedbackPath("/admin/categories", { flash: "category-deleted" });

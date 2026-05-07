@@ -20,7 +20,6 @@ export async function GET(request: Request) {
   const parsed = publicCourseDiscoverySchema.safeParse({
     query: searchParams.get("query") ?? undefined,
     category: searchParams.get("category") ?? undefined,
-    level: searchParams.get("level") ?? undefined,
     price: searchParams.get("price") ?? undefined,
     instructor: searchParams.get("instructor") ?? undefined,
     rating: searchParams.get("rating") ?? undefined,

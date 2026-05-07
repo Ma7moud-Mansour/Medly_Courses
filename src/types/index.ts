@@ -18,8 +18,10 @@ export type User = {
 export type Category = {
   id: string;
   name: string;
+  nameEn?: string;
   slug: string;
   description?: string;
+  descriptionEn?: string;
   icon?: string;
   coursesCount?: number;
   color?: string;
@@ -28,11 +30,15 @@ export type Category = {
 export type Instructor = {
   id: string;
   name: string;
+  nameEn?: string;
   slug: string;
   title?: string;
+  titleEn?: string;
   avatar?: string;
   bio?: string;
+  bioEn?: string;
   specialization?: string;
+  specializationEn?: string;
   vodafoneCashNumber?: string;
   studentsCount?: number;
   coursesCount?: number;

@@ -330,46 +330,37 @@ export async function listPublicInstructors(input: InstructorListingQuery = {}):
   const pageSize = clamp(input.pageSize ?? 6, 1, 24);
 
   const instructors = await prisma.instructor.findMany({
-    where: {
-      courses: {
-        some: {
-          isPublished: true,
-          slug: {
-            notIn: DEMO_COURSE_SLUGS,
-          },
-        },
-      },
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { title: { contains: query, mode: "insensitive" } },
-              { specialization: { contains: query, mode: "insensitive" } },
-              { bio: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { title: { contains: query, mode: "insensitive" } },
+            { specialization: { contains: query, mode: "insensitive" } },
+            { bio: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
+    orderBy: {
+      name: "asc",
     },
   });
 
   const metricMap = await buildInstructorMetrics(instructors.map((instructor) => instructor.id));
-  const mapped = instructors
-    .map((instructor) => ({
-      id: instructor.id,
-      name: instructor.name,
-      slug: instructor.slug,
-      title: instructor.title ?? undefined,
-      avatar: resolveInstructorAvatar(instructor.avatar ?? undefined, instructor.slug, instructor.name),
-      bio: instructor.bio ?? undefined,
-      specialization: instructor.specialization ?? undefined,
-      ...(metricMap.get(instructor.id) ?? {
-        coursesCount: 0,
-        studentsCount: 0,
-        rating: 0,
-        reviewsCount: 0,
-      }),
-    }))
-    .filter((instructor) => instructor.coursesCount > 0);
+  const mapped = instructors.map((instructor) => ({
+    id: instructor.id,
+    name: instructor.name,
+    slug: instructor.slug,
+    title: instructor.title ?? undefined,
+    avatar: resolveInstructorAvatar(instructor.avatar ?? undefined, instructor.slug, instructor.name),
+    bio: instructor.bio ?? undefined,
+    specialization: instructor.specialization ?? undefined,
+    ...(metricMap.get(instructor.id) ?? {
+      coursesCount: 0,
+      studentsCount: 0,
+      rating: 0,
+      reviewsCount: 0,
+    }),
+  }));
 
   const sorted = mapped.sort((left, right) => {
     switch (sort) {

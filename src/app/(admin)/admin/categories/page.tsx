@@ -41,12 +41,14 @@ export default async function AdminCategoriesPage({
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="text-lg font-black">إضافة تصنيف جديد</h2>
-        <form action={createAdminCategoryAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <form action={createAdminCategoryAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <input className="form-input" name="name" placeholder="اسم التصنيف" required />
+          <input className="form-input" name="nameEn" placeholder="English name" />
           <input className="form-input" name="slug" placeholder="slug" required />
           <input className="form-input xl:col-span-2" name="description" placeholder="وصف اختياري" />
+          <input className="form-input xl:col-span-2" name="descriptionEn" placeholder="English description" />
           <input className="form-input" name="icon" placeholder="icon اختياري" />
-          <div className="md:col-span-2 xl:col-span-5">
+          <div className="md:col-span-2 xl:col-span-6">
             <PendingSubmitButton pendingLabel="جاري الإضافة..." size="md">
               إضافة تصنيف
             </PendingSubmitButton>
@@ -88,9 +90,16 @@ export default async function AdminCategoriesPage({
                 <input name="categoryId" type="hidden" value={category.id} />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <input className="form-input" defaultValue={category.name} name="name" required />
+                  <input className="form-input" defaultValue={category.nameEn} name="nameEn" placeholder="English name" />
                   <input className="form-input" defaultValue={category.slug} name="slug" required />
                 </div>
                 <input className="form-input" defaultValue={category.description} name="description" placeholder="وصف التصنيف" />
+                <input
+                  className="form-input"
+                  defaultValue={category.descriptionEn}
+                  name="descriptionEn"
+                  placeholder="English description"
+                />
                 <input className="form-input" defaultValue={category.icon} name="icon" placeholder="icon" />
                 <PendingSubmitButton pendingLabel="جاري الحفظ..." size="sm" variant="outline">
                   حفظ التعديل

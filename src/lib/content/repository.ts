@@ -1643,15 +1643,19 @@ export async function deleteAdminCourse(input: { adminId: string; courseId: stri
 export async function createAdminCategory(input: {
   adminId: string;
   name: string;
+  nameEn?: string;
   slug: string;
   description?: string;
+  descriptionEn?: string;
   icon?: string;
 }) {
   const category = await prisma.category.create({
     data: {
       name: input.name.trim(),
+      nameEn: input.nameEn?.trim() || null,
       slug: input.slug.trim(),
       description: input.description?.trim() || null,
+      descriptionEn: input.descriptionEn?.trim() || null,
       icon: input.icon?.trim() || null,
     },
   });
@@ -1672,16 +1676,20 @@ export async function updateAdminCategory(input: {
   adminId: string;
   categoryId: string;
   name: string;
+  nameEn?: string;
   slug: string;
   description?: string;
+  descriptionEn?: string;
   icon?: string;
 }) {
   const category = await prisma.category.update({
     where: { id: input.categoryId },
     data: {
       name: input.name.trim(),
+      nameEn: input.nameEn?.trim() || null,
       slug: input.slug.trim(),
       description: input.description?.trim() || null,
+      descriptionEn: input.descriptionEn?.trim() || null,
       icon: input.icon?.trim() || null,
     },
   });

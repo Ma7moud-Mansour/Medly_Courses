@@ -1,12 +1,24 @@
 import Link from "next/link";
-import { GraduationCap, Phone, PlusCircle, Pencil } from "lucide-react";
+import { GraduationCap, Phone, PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
 import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { InstructorAvatar } from "@/components/instructors/instructor-avatar";
 import { getAdminInstructorsPageData } from "@/lib/admin/actions";
+import { deleteAdminInstructorAction } from "@/lib/admin/content-actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminInstructorsPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function AdminInstructorsPage({ searchParams }: { searchParams?: SearchParams }) {
+  const params = searchParams ? await searchParams : {};
+  const flash = first(params.flash);
+  const error = first(params.error);
   const instructors = await getAdminInstructorsPageData();
 
   return (
@@ -25,6 +37,9 @@ export default async function AdminInstructorsPage() {
           إضافة دكتور
         </Link>
       </section>
+
+      {flash ? <ActionFeedbackBanner kind="success" message="تم تحديث بيانات الدكاترة بنجاح." /> : null}
+      {error ? <ActionFeedbackBanner kind="error" message={error} /> : null}
 
       {instructors.length ? (
         <div className="grid gap-4 xl:grid-cols-2">
@@ -49,18 +64,38 @@ export default async function AdminInstructorsPage() {
                   <Metric label="طلاب" value={instructor.studentsCount ?? 0} />
                   <Metric label="التقييم" value={instructor.ratingAverage} />
                 </div>
-                <div className="flex items-center justify-between border-t border-border pt-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
                   <p className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground">
                     <Phone className="h-4 w-4 text-primary" />
                     {instructor.vodafoneCashNumber ?? "رقم فودافون كاش غير مضاف"}
                   </p>
-                  <Link
-                    className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
-                    href={`/admin/instructors/${instructor.id}/edit`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    تعديل
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                      className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+                      href={`/admin/instructors/${instructor.id}/edit`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      تعديل
+                    </Link>
+                    {instructor.coursesCount === 0 ? (
+                      <form action={deleteAdminInstructorAction}>
+                        <input name="instructorId" type="hidden" value={instructor.id} />
+                        <PendingSubmitButton
+                          className="border-danger/40 text-danger hover:bg-danger/5"
+                          pendingLabel="جاري الحذف..."
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          حذف
+                        </PendingSubmitButton>
+                      </form>
+                    ) : (
+                      <span className="text-xs font-bold text-muted-foreground">
+                        انقل الكورسات قبل الحذف
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </article>

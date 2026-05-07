@@ -37,7 +37,6 @@ export default async function CoursesPage({ searchParams }: { searchParams: Sear
   const parsed = publicCourseDiscoverySchema.safeParse({
     query: first(params.query),
     category: first(params.category),
-    level: first(params.level),
     price: first(params.price),
     instructor: first(params.instructor),
     rating: first(params.rating),

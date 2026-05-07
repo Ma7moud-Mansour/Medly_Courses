@@ -594,8 +594,10 @@ export async function listAdminCategoriesSummary() {
     return {
       id: category.id,
       name: category.name,
+      nameEn: category.nameEn ?? undefined,
       slug: category.slug,
       description: category.description ?? undefined,
+      descriptionEn: category.descriptionEn ?? undefined,
       icon: category.icon ?? undefined,
       totalCourses,
       publishedCourses,

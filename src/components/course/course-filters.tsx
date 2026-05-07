@@ -1,14 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import type { CourseDiscoveryResult } from "@/lib/course/repository";
-import type { CourseLevel } from "@/types";
-
-const levels: { value: CourseLevel | "all"; label: string }[] = [
-  { value: "all", label: "كل المستويات" },
-  { value: "beginner", label: "مبتدئ" },
-  { value: "intermediate", label: "متوسط" },
-  { value: "advanced", label: "متقدم" },
-];
 
 const ratingOptions = [
   { value: "all", label: "كل التقييمات" },
@@ -34,7 +26,7 @@ export function CourseFilters({
   return (
     <form
       action="/courses"
-      className="grid gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm lg:grid-cols-[1.6fr_repeat(6,1fr)_auto_auto]"
+      className="grid gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm lg:grid-cols-[1.8fr_repeat(5,1fr)_auto_auto]"
       method="GET"
     >
       <label className="relative">
@@ -52,14 +44,6 @@ export function CourseFilters({
         {options.categories.map((category) => (
           <option key={category.value} value={category.value}>
             {category.label} ({category.count})
-          </option>
-        ))}
-      </Select>
-
-      <Select name="level" defaultValue={defaults.level ?? "all"} label="المستوى">
-        {levels.map((level) => (
-          <option key={level.value} value={level.value}>
-            {level.label}
           </option>
         ))}
       </Select>

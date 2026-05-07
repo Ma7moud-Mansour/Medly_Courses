@@ -579,6 +579,9 @@ async function getPublishedCourseFilterOptions() {
         description: true,
         icon: true,
       },
+      orderBy: {
+        name: "asc",
+      },
     }),
     prisma.instructor.findMany({
       where: {
@@ -609,8 +612,7 @@ async function getPublishedCourseFilterOptions() {
         value: category.slug,
         label: category.name,
         count: categoryCountMap.get(category.id) ?? 0,
-      }))
-      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "ar")),
+      })),
     instructors: instructors
       .map((instructor) => ({
         value: instructor.slug,
@@ -774,14 +776,6 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
     normalizedQuery
       ? prisma.category.findMany({
           where: {
-            courses: {
-              some: {
-                isPublished: true,
-                slug: {
-                  notIn: DEMO_COURSE_SLUGS,
-                },
-              },
-            },
             OR: [
               { name: { contains: normalizedQuery, mode: "insensitive" } },
               { description: { contains: normalizedQuery, mode: "insensitive" } },
@@ -793,16 +787,6 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
           },
         })
       : prisma.category.findMany({
-          where: {
-            courses: {
-              some: {
-                isPublished: true,
-                slug: {
-                  notIn: DEMO_COURSE_SLUGS,
-                },
-              },
-            },
-          },
           take: 5,
           orderBy: {
             name: "asc",
@@ -811,14 +795,6 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
     normalizedQuery
       ? prisma.instructor.findMany({
           where: {
-            courses: {
-              some: {
-                isPublished: true,
-                slug: {
-                  notIn: DEMO_COURSE_SLUGS,
-                },
-              },
-            },
             OR: [
               { name: { contains: normalizedQuery, mode: "insensitive" } },
               { title: { contains: normalizedQuery, mode: "insensitive" } },
@@ -832,16 +808,6 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
           },
         })
       : prisma.instructor.findMany({
-          where: {
-            courses: {
-              some: {
-                isPublished: true,
-                slug: {
-                  notIn: DEMO_COURSE_SLUGS,
-                },
-              },
-            },
-          },
           take: 5,
           orderBy: {
             name: "asc",

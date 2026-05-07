@@ -77,7 +77,6 @@ export const reviewSchema = z.object({
 export const publicCourseDiscoverySchema = z.object({
   query: z.string().trim().max(120).optional().or(z.literal("")),
   category: z.string().trim().max(120).optional().or(z.literal("")).or(z.literal("all")),
-  level: z.enum(["all", "beginner", "intermediate", "advanced"]).optional(),
   price: z.enum(["all", "free", "paid"]).optional(),
   instructor: z.string().trim().max(120).optional().or(z.literal("")).or(z.literal("all")),
   rating: z.enum(["all", "4", "4.5"]).optional(),

@@ -60,7 +60,7 @@ export const contactSchema = z.object({
   topic: z.enum(["support", "billing", "content", "course_access", "general"], {
     error: "Choose a topic",
   }),
-  message: z.string().min(20, "Add more details to your message"),
+  message: z.string().trim().min(1, "Message is required"),
 });
 
 export const checkoutSchema = z.object({
@@ -71,7 +71,7 @@ export const checkoutSchema = z.object({
 
 export const reviewSchema = z.object({
   rating: z.coerce.number().min(1).max(5),
-  comment: z.string().min(10, "Write a helpful review").max(600),
+  comment: z.string().trim().min(1, "Review comment is required").max(600),
 });
 
 export const publicCourseDiscoverySchema = z.object({
@@ -130,7 +130,7 @@ export const adminCourseSchema = z.object({
   slug: z.string().min(3, "Slug is required"),
   subtitle: z.string().max(180).optional().or(z.literal("")),
   subtitleEn: z.string().max(180).optional().or(z.literal("")),
-  description: z.string().min(20, "Description is too short"),
+  description: z.string().trim().min(1, "Course description is required"),
   descriptionEn: z.string().optional().or(z.literal("")),
   thumbnail: z.string().min(6, "Add a thumbnail URL"),
   price: z.coerce.number().min(0),
@@ -286,7 +286,7 @@ export const adminPaymentReviewSchema = z.object({
 export const supportTicketCreateSchema = z.object({
   title: z.string().trim().min(3, "Enter a clear ticket title"),
   issueType: z.enum(["course_access", "payment", "technical", "permissions", "general"]),
-  message: z.string().trim().min(10, "Add more detail to help support"),
+  message: z.string().trim().min(1, "Message is required"),
 });
 
 export const supportTicketReplySchema = z.object({

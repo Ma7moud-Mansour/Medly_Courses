@@ -5,13 +5,12 @@ import {
   getCategoryById,
   getInstructorById,
 } from "@/data/medly";
-import type { Course, CourseLevel, SearchResultGroup } from "@/types";
+import type { Course, SearchResultGroup } from "@/types";
 
 export type CourseQuery = {
   query?: string;
   category?: string;
   year?: string;
-  level?: CourseLevel | "all";
   price?: "all" | "free" | "paid" | "discount";
   sort?: "popular" | "newest" | "rating" | "price-low" | "price-high";
 };
@@ -52,7 +51,6 @@ export function filterCourses(query: CourseQuery = {}) {
     const matchesCategory =
       !query.category || query.category === "all" || category?.slug === query.category;
     const matchesYear = !query.year || query.year === "all" || course.year === query.year;
-    const matchesLevel = !query.level || query.level === "all" || course.level === query.level;
     const matchesPrice =
       !query.price ||
       query.price === "all" ||
@@ -60,7 +58,7 @@ export function filterCourses(query: CourseQuery = {}) {
       (query.price === "paid" && priceOf(course) > 0) ||
       (query.price === "discount" && Boolean(course.discountPrice));
 
-    return matchesText && matchesCategory && matchesYear && matchesLevel && matchesPrice;
+    return matchesText && matchesCategory && matchesYear && matchesPrice;
   });
 
   return filtered.sort((a, b) => {

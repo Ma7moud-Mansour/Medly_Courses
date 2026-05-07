@@ -63,7 +63,7 @@ const ticketSchema = z.object({
   userId: idSchema,
   title: z.string().min(3),
   issueType: z.enum(["course_access", "payment", "technical", "permissions", "general"]),
-  description: z.string().min(5),
+  description: z.string().trim().min(1),
   assignedToAdminId: z.string().optional(),
 });
 

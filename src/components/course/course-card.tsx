@@ -31,12 +31,6 @@ type CourseCardData = Course & {
   learningHref?: string;
 };
 
-const levelLabels = {
-  beginner: "مبتدئ",
-  intermediate: "متوسط",
-  advanced: "متقدم",
-};
-
 export function CourseCard({ course }: { course: CourseCardData }) {
   const { language } = useLanguage();
   const discount = getDiscountPercent(course.price, course.discountPrice);
@@ -82,12 +76,11 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       </Link>
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center justify-between gap-3 text-xs font-black">
+        <div className="flex items-center gap-3 text-xs font-black">
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#f5fbf9] px-2.5 py-1 text-[#0e5f5c]">
             <Stethoscope className="h-3.5 w-3.5" />
             {categoryName}
           </span>
-          <span className="text-[#8a6a2f]">{levelLabels[course.level]}</span>
         </div>
 
         <Link href={`/courses/${course.slug}`}>

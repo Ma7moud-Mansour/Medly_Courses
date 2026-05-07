@@ -64,6 +64,7 @@ export function CourseMetadataForm({
   return (
     <form action={action} className="grid gap-5">
       {mode === "edit" ? <input name="courseId" type="hidden" value={course?.id} /> : null}
+      <input name="level" type="hidden" value={course?.level ?? "beginner"} />
 
       <FormSection
         title="البيانات الأساسية"
@@ -123,8 +124,8 @@ export function CourseMetadataForm({
         </div>
       </FormSection>
 
-      <FormSection title="التصنيف والدكتور" description="اختر التصنيف والدكتور والمستوى واللغة بشكل صحيح لتسهيل الاكتشاف والشراء.">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <FormSection title="التصنيف والدكتور" description="اختر التصنيف والدكتور واللغة بشكل صحيح لتسهيل الاكتشاف والشراء.">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="grid gap-2 text-sm font-bold">
             التصنيف
             <select className="form-input" defaultValue={course?.categoryId} name="categoryId" required>
@@ -146,15 +147,6 @@ export function CourseMetadataForm({
                   {instructor.name}
                 </option>
               ))}
-            </select>
-          </label>
-
-          <label className="grid gap-2 text-sm font-bold">
-            المستوى
-            <select className="form-input" defaultValue={course?.level} name="level" required>
-              <option value="beginner">مبتدئ</option>
-              <option value="intermediate">متوسط</option>
-              <option value="advanced">متقدم</option>
             </select>
           </label>
 

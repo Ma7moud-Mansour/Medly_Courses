@@ -156,7 +156,6 @@ export type CourseDiscoveryRating = "all" | "4" | "4.5";
 export type CourseDiscoveryQuery = {
   query?: string;
   category?: string;
-  level?: Course["level"] | "all";
   price?: CourseDiscoveryPrice;
   instructor?: string;
   rating?: CourseDiscoveryRating;
@@ -186,7 +185,7 @@ export type CourseDiscoveryResult = {
   applied: Required<
     Pick<CourseDiscoveryQuery, "price" | "rating" | "sort" | "page" | "pageSize">
   > &
-    Pick<CourseDiscoveryQuery, "query" | "category" | "level" | "instructor">;
+    Pick<CourseDiscoveryQuery, "query" | "category" | "instructor">;
 };
 
 export type CourseSearchResultGroup = {
@@ -213,13 +212,11 @@ function buildLearningOutcomes(course: Pick<CourseSummaryRecord, "durationHours"
   ];
 }
 
-function buildRequirements(course: Pick<CourseSummaryRecord, "language" | "level">) {
+function buildRequirements(course: Pick<CourseSummaryRecord, "language">) {
   return [
     `لغة الكورس: ${course.language}.`,
     "الهاتف أو اللابتوب يكفي لمتابعة الدروس وحفظ تقدمك.",
-    course.level === "beginner"
-      ? "لا تحتاج أكثر من أساسيات أولية قبل البدء."
-      : "يفضل أن تكون راجعت الأساسيات المرتبطة بالمادة قبل هذا الكورس.",
+    "يمكنك البدء مباشرة ومتابعة الدروس بالترتيب الذي يناسبك.",
   ];
 }
 
@@ -632,8 +629,6 @@ export async function discoverPublicCourses(
   const normalizedQuery = normalizeDiscoveryValue(input.query);
   const normalizedCategory = normalizeDiscoveryValue(input.category);
   const normalizedInstructor = normalizeDiscoveryValue(input.instructor);
-  const normalizedLevel =
-    input.level && input.level !== "all" ? input.level : undefined;
   const price = input.price ?? "all";
   const rating = input.rating ?? "all";
   const sort = input.sort ?? "popular";
@@ -657,11 +652,6 @@ export async function discoverPublicCourses(
           instructor: {
             slug: normalizedInstructor,
           },
-        }
-      : {}),
-    ...(normalizedLevel
-      ? {
-          level: normalizedLevel,
         }
       : {}),
     ...(normalizedQuery
@@ -749,7 +739,6 @@ export async function discoverPublicCourses(
     applied: {
       query: normalizedQuery,
       category: normalizedCategory,
-      level: normalizedLevel,
       price,
       instructor: normalizedInstructor,
       rating,

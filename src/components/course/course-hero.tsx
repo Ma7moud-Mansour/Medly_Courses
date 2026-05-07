@@ -1,4 +1,4 @@
-import { Clock, GraduationCap, ShieldCheck, Users } from "lucide-react";
+import { Clock, ShieldCheck, Users } from "lucide-react";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { formatNumber } from "@/lib/utils";
 import type { Course } from "@/types";
@@ -9,12 +9,6 @@ type CourseHeroData = Course & {
   isEnrolled?: boolean;
   isAccessible?: boolean;
   accessStatus?: "active" | "revoked" | "expired" | "inactive";
-};
-
-const levelLabels = {
-  beginner: "مبتدئ",
-  intermediate: "متوسط",
-  advanced: "متقدم",
 };
 
 function getAccessLabel(course: CourseHeroData) {
@@ -65,10 +59,6 @@ export function CourseHero({ course }: { course: CourseHeroData }) {
             <span className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-[#0e5f5c]" />
               {course.durationHours} ساعة
-            </span>
-            <span className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-[#0e5f5c]" />
-              {levelLabels[course.level]}
             </span>
           </div>
 

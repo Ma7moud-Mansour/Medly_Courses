@@ -152,6 +152,7 @@ export type Review = {
 export type CartItem = {
   id: string;
   courseId: string;
+  slug?: string;
   title: string;
   thumbnail: string;
   price: number;

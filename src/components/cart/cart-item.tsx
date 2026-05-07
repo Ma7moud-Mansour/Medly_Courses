@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { courses } from "@/data/medly";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import type { CartItem as CartItemType } from "@/types";
 
 export function CartItem({ item }: { item: CartItemType }) {
   const removeItem = useCartStore((state) => state.removeItem);
-  const course = courses.find((candidate) => candidate.id === item.courseId);
-  const href = course ? `/courses/${course.slug}` : "/courses";
+  const href = item.slug ? `/courses/${item.slug}` : "/courses";
 
   return (
     <div className="grid gap-4 rounded-lg border border-[#e8eeec] bg-white p-4 sm:grid-cols-[96px_1fr_auto] sm:items-center">

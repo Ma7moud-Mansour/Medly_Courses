@@ -117,8 +117,8 @@ export const instructors: Instructor[] = [
   },
   {
     id: "inst-2",
-    name: "د. يوسف عبد الرحمن",
-    slug: "dr-youssef-abdelrahman",
+    name: "يوسف زيادة",
+    slug: "dr-youssef-ziadeh",
     title: "مدرب أساسيات طبية وOSCE",
     specialization: "Foundational Medicine and OSCE",
     bio: "يشرح المادة كخريطة منظمة، مع ملخصات ذكية وتطبيقات سريرية قصيرة بعد كل وحدة.",

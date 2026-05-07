@@ -368,7 +368,7 @@ function mapCourseSummary(
     slug: course.slug,
     subtitle: course.subtitle ?? undefined,
     description: course.description,
-    thumbnail: course.thumbnail,
+    thumbnail: resolveStoredAssetUrl({ url: course.thumbnail }) ?? course.thumbnail,
     isPublished: course.isPublished,
     previewVideo: course.previewVideo ?? undefined,
     price: course.price,
@@ -565,11 +565,6 @@ async function getPublishedCourseFilterOptions() {
 
   const [categories, instructors] = await Promise.all([
     prisma.category.findMany({
-      where: {
-        id: {
-          in: categoryGroups.map((entry) => entry.categoryId),
-        },
-      },
       select: {
         id: true,
         name: true,

@@ -3,10 +3,14 @@ import { Container } from "@/components/layout/container";
 import { SectionHeader } from "@/components/layout/section-header";
 import { CourseGrid } from "@/components/course/course-grid";
 import { buttonVariants } from "@/components/ui/button";
-import { courses } from "@/data/medly";
+import { listFeaturedCourses } from "@/lib/course/repository";
 
-export function FeaturedCourses() {
-  const featured = courses.filter((course) => course.featured).slice(0, 3);
+export async function FeaturedCourses() {
+  const featured = await listFeaturedCourses({ isAuthenticated: false }, 3);
+
+  if (!featured.length) {
+    return null;
+  }
 
   return (
     <section className="bg-[#f8faf8] py-20">

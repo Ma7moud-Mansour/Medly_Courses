@@ -15,7 +15,6 @@ import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { WishlistButton } from "@/components/course/wishlist-button";
 import { buttonVariants } from "@/components/ui/button";
 import { RatingStars } from "@/components/ui/rating-stars";
-import { getCourseMeta } from "@/lib/course-query";
 import { cn, formatCurrency, formatNumber, getDiscountPercent } from "@/lib/utils";
 import { getLocalizedField } from "@/lib/i18n/utils";
 import { useLanguage } from "@/components/i18n/language-provider";
@@ -40,20 +39,16 @@ const levelLabels = {
 
 export function CourseCard({ course }: { course: CourseCardData }) {
   const { language } = useLanguage();
-  const { category, instructor } = getCourseMeta(course);
   const discount = getDiscountPercent(course.price, course.discountPrice);
   const currentPrice = course.discountPrice ?? course.price;
   
   const localizedTitle = getLocalizedField(course, "title", language);
   const localizedSubtitle = getLocalizedField(course, "subtitle", language);
-  const fallbackCategory = getLocalizedField(category, "name", language) || "كورس طبي";
-  const categoryName = course.categoryName ? course.categoryName : fallbackCategory;
+  const categoryName = course.categoryName ?? "كورس طبي";
   
-  const fallbackInstructor = getLocalizedField(instructor, "name", language) || "هيئة التدريس";
-  const instructorName = course.instructorName ? course.instructorName : fallbackInstructor;
+  const instructorName = course.instructorName ?? "هيئة التدريس";
   
-  const fallbackBio = getLocalizedField(instructor, "bio", language) || getLocalizedField(instructor, "title", language) || "شرح طبي منظم ومباشر يختصر عليك وقت المذاكرة.";
-  const instructorBio = course.instructorBio ? course.instructorBio : fallbackBio;
+  const instructorBio = course.instructorBio ?? "شرح طبي منظم ومباشر يختصر عليك وقت المذاكرة.";
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-[#e4eeeb] bg-white shadow-[0_16px_36px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#d0e4de] hover:shadow-[0_24px_48px_rgba(15,23,42,0.11)]">

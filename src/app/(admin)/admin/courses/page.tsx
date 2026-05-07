@@ -65,8 +65,17 @@ export default async function AdminCoursesPage() {
               {courses.map((course) => (
                 <tr key={course.id} className="border-t border-border align-top">
                   <td className="p-4">
-                    <p className="font-black">{course.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{course.slug}</p>
+                    <div className="flex items-center gap-3">
+                      <img
+                        alt={course.title}
+                        className="h-14 w-20 rounded-lg border border-border object-cover"
+                        src={course.thumbnail}
+                      />
+                      <div>
+                        <p className="font-black">{course.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{course.slug}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="p-4 text-muted-foreground">{course.categoryName}</td>
                   <td className="p-4 text-muted-foreground">{course.instructorName}</td>

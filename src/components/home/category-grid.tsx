@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/layout/container";
-import { enrichedCategories } from "@/data/medly";
+import { listPublicCategories } from "@/lib/catalog/repository";
 
-export function CategoryGrid() {
-  const categories = enrichedCategories.slice(0, 4);
+export async function CategoryGrid() {
+  const { categories } = await listPublicCategories({ pageSize: 4 });
+
+  if (!categories.length) {
+    return null;
+  }
 
   return (
     <section className="border-b border-[#e8eeec] bg-white py-10">

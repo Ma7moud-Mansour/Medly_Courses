@@ -1,9 +1,23 @@
 import { Boxes, FolderOpen } from "lucide-react";
+import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { getAdminCategoriesPageData } from "@/lib/admin/actions";
+import {
+  createAdminCategoryAction,
+  deleteAdminCategoryAction,
+  updateAdminCategoryAction,
+} from "@/lib/admin/content-actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCategoriesPage() {
+export default async function AdminCategoriesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ flash?: string; error?: string }>;
+}) {
+  const params = await searchParams;
+  const flash = params?.flash;
+  const error = params?.error;
   const categories = await getAdminCategoriesPageData();
 
   return (
@@ -20,6 +34,24 @@ export default async function AdminCategoriesPage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {flash ? <ActionFeedbackBanner kind="success" message="تم تحديث التصنيفات بنجاح." /> : null}
+      {error ? <ActionFeedbackBanner kind="error" message={error} /> : null}
+
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <h2 className="text-lg font-black">إضافة تصنيف جديد</h2>
+        <form action={createAdminCategoryAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <input className="form-input" name="name" placeholder="اسم التصنيف" required />
+          <input className="form-input" name="slug" placeholder="slug" required />
+          <input className="form-input xl:col-span-2" name="description" placeholder="وصف اختياري" />
+          <input className="form-input" name="icon" placeholder="icon اختياري" />
+          <div className="md:col-span-2 xl:col-span-5">
+            <PendingSubmitButton pendingLabel="جاري الإضافة..." size="md">
+              إضافة تصنيف
+            </PendingSubmitButton>
+          </div>
+        </form>
       </section>
 
       {categories.length ? (
@@ -52,6 +84,34 @@ export default async function AdminCategoriesPage() {
                   <p className="mt-1 text-xl font-black">{category.hiddenCourses.toLocaleString("ar-EG")}</p>
                 </div>
               </div>
+              <form action={updateAdminCategoryAction} className="mt-5 grid gap-3">
+                <input name="categoryId" type="hidden" value={category.id} />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input className="form-input" defaultValue={category.name} name="name" required />
+                  <input className="form-input" defaultValue={category.slug} name="slug" required />
+                </div>
+                <input className="form-input" defaultValue={category.description} name="description" placeholder="وصف التصنيف" />
+                <input className="form-input" defaultValue={category.icon} name="icon" placeholder="icon" />
+                <PendingSubmitButton pendingLabel="جاري الحفظ..." size="sm" variant="outline">
+                  حفظ التعديل
+                </PendingSubmitButton>
+              </form>
+              <form action={deleteAdminCategoryAction} className="mt-3">
+                <input name="categoryId" type="hidden" value={category.id} />
+                <PendingSubmitButton
+                  disabled={category.totalCourses > 0}
+                  pendingLabel="جاري الحذف..."
+                  size="sm"
+                  variant="outline"
+                >
+                  حذف التصنيف
+                </PendingSubmitButton>
+                {category.totalCourses > 0 ? (
+                  <p className="mt-2 text-xs font-bold text-muted-foreground">
+                    لا يمكن حذف التصنيف قبل نقل أو حذف الكورسات المرتبطة به.
+                  </p>
+                ) : null}
+              </form>
             </article>
           ))}
         </div>

@@ -3,13 +3,15 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
-import { enrichedCategories } from "@/data/medly";
+import { listPublicCategories } from "@/lib/catalog/repository";
 
 export const metadata: Metadata = {
   title: "التصنيفات",
 };
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const { categories } = await listPublicCategories({ pageSize: 24 });
+
   return (
     <>
       <PageHeader
@@ -18,7 +20,7 @@ export default function CategoriesPage() {
         subtitle="كل تصنيف يجمع الكورسات والاختبارات والموارد المناسبة لنفس المسار."
       />
       <Container className="grid gap-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
-        {enrichedCategories.map((category) => (
+        {categories.map((category) => (
           <Link
             key={category.id}
             className="group rounded-lg border border-border bg-surface p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"

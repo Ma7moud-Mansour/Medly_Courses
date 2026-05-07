@@ -223,7 +223,7 @@ function toCourse(course: Pick<
     slug: course.slug,
     subtitle: course.subtitle ?? undefined,
     description: course.description,
-    thumbnail: course.thumbnail,
+    thumbnail: resolveStoredAssetUrl({ url: course.thumbnail }) ?? course.thumbnail,
     isPublished: course.isPublished,
     previewVideo: course.previewVideo ?? undefined,
     price: course.price,
@@ -1496,6 +1496,87 @@ export async function deleteAdminCourse(input: { adminId: string; courseId: stri
       action: "course.deleted",
       entityType: "course",
       entityId: input.courseId,
+    },
+  });
+}
+
+export async function createAdminCategory(input: {
+  adminId: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+}) {
+  const category = await prisma.category.create({
+    data: {
+      name: input.name.trim(),
+      slug: input.slug.trim(),
+      description: input.description?.trim() || null,
+      icon: input.icon?.trim() || null,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "category.created",
+      entityType: "category",
+      entityId: category.id,
+    },
+  });
+
+  return category;
+}
+
+export async function updateAdminCategory(input: {
+  adminId: string;
+  categoryId: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+}) {
+  const category = await prisma.category.update({
+    where: { id: input.categoryId },
+    data: {
+      name: input.name.trim(),
+      slug: input.slug.trim(),
+      description: input.description?.trim() || null,
+      icon: input.icon?.trim() || null,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "category.updated",
+      entityType: "category",
+      entityId: category.id,
+    },
+  });
+
+  return category;
+}
+
+export async function deleteAdminCategory(input: { adminId: string; categoryId: string }) {
+  const coursesCount = await prisma.course.count({
+    where: { categoryId: input.categoryId },
+  });
+
+  if (coursesCount > 0) {
+    throw new Error("Cannot delete a category while courses are assigned to it.");
+  }
+
+  await prisma.category.delete({
+    where: { id: input.categoryId },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "category.deleted",
+      entityType: "category",
+      entityId: input.categoryId,
     },
   });
 }

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { resolveInstructorAvatar } from "@/lib/instructors/avatar";
+import { resolveStoredAssetUrl } from "@/lib/storage";
 import type {
   AuditLog,
   Category,
@@ -185,7 +186,7 @@ function mapCourse(course: CourseRecord): Course {
     slug: course.slug,
     subtitle: course.subtitle ?? undefined,
     description: course.description,
-    thumbnail: course.thumbnail,
+    thumbnail: resolveStoredAssetUrl({ url: course.thumbnail }) ?? course.thumbnail,
     isPublished: course.isPublished,
     previewVideo: course.previewVideo ?? undefined,
     price: course.price,

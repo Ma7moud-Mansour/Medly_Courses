@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { enrichedInstructors } from "@/data/medly";
+import { listPublicInstructors } from "@/lib/catalog/repository";
 
-export function GET() {
-  return NextResponse.json({ data: enrichedInstructors });
+export async function GET() {
+  const { instructors } = await listPublicInstructors({ pageSize: 24 });
+  return NextResponse.json({ data: instructors });
 }

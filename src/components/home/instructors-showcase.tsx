@@ -3,16 +3,22 @@ import { ArrowLeft } from "lucide-react";
 import { InstructorAvatar } from "@/components/instructors/instructor-avatar";
 import { Container } from "@/components/layout/container";
 import { SectionHeader } from "@/components/layout/section-header";
-import { enrichedInstructors } from "@/data/medly";
+import { listPublicInstructors } from "@/lib/catalog/repository";
 
-export function InstructorsShowcase() {
+export async function InstructorsShowcase() {
+  const { instructors } = await listPublicInstructors({ pageSize: 4 });
+
+  if (!instructors.length) {
+    return null;
+  }
+
   return (
     <section className="bg-[#f8faf8] py-20">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
           <SectionHeader eyebrow="الدكاترة" title="الدكاترة" />
           <div className="grid gap-4 sm:grid-cols-2">
-            {enrichedInstructors.map((instructor) => (
+            {instructors.map((instructor) => (
               <Link
                 key={instructor.id}
                 className="group rounded-lg border border-[#e8eeec] bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-[#dceeea]"

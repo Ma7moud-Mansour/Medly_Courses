@@ -229,21 +229,14 @@ export async function listPublicCategories(input: CategoryListingQuery = {}): Pr
   const pageSize = clamp(input.pageSize ?? 8, 1, 24);
 
   const categories = await prisma.category.findMany({
-    where: {
-      courses: {
-        some: {
-          isPublished: true,
-        },
-      },
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { description: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
     orderBy: {
       name: "asc",
     },
@@ -259,7 +252,7 @@ export async function listPublicCategories(input: CategoryListingQuery = {}): Pr
     coursesCount: countMap.get(category.id) ?? 0,
   }));
 
-  const filtered = mapped.filter((category) => category.coursesCount > 0);
+  const filtered = mapped;
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = clamp(input.page ?? 1, 1, totalPages);

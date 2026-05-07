@@ -11,7 +11,6 @@ const ILLUSTRATED_AVATARS: Array<{
   },
   {
     match: (slug, name) =>
-      slug === "dr-youssef-abdelrahman" ||
       slug === "dr-youssef-ziadeh" ||
       name?.includes("يوسف") === true ||
       name?.toLowerCase().includes("youssef") === true,

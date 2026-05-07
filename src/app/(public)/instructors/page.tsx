@@ -4,19 +4,21 @@ import { BookOpen, Users } from "lucide-react";
 import { InstructorAvatar } from "@/components/instructors/instructor-avatar";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
-import { enrichedInstructors } from "@/data/medly";
+import { listPublicInstructors } from "@/lib/catalog/repository";
 import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "الدكاترة",
 };
 
-export default function InstructorsPage() {
+export default async function InstructorsPage() {
+  const { instructors } = await listPublicInstructors({ pageSize: 24 });
+
   return (
     <>
       <PageHeader eyebrow="الدكاترة" title="الدكاترة" />
       <Container className="grid gap-5 py-10 md:grid-cols-2 xl:grid-cols-3">
-        {enrichedInstructors.map((instructor) => (
+        {instructors.map((instructor) => (
           <Link
             key={instructor.id}
             className="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"

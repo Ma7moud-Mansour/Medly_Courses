@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { enrichedCategories } from "@/data/medly";
+import { listPublicCategories } from "@/lib/catalog/repository";
 
-export function GET() {
-  return NextResponse.json({ data: enrichedCategories });
+export async function GET() {
+  const { categories } = await listPublicCategories({ pageSize: 24 });
+  return NextResponse.json({ data: categories });
 }

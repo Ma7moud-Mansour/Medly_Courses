@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
-import { courses, getCategoryBySlug } from "@/data/medly";
+import { getPublicCategoryDetailsBySlug } from "@/lib/catalog/repository";
 
 type Params = Promise<{ slug: string }>;
 
 export async function GET(_: Request, { params }: { params: Params }) {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const details = await getPublicCategoryDetailsBySlug(slug, {}, { isAuthenticated: false });
 
-  if (!category) {
+  if (!details) {
     return NextResponse.json({ error: "Category not found" }, { status: 404 });
   }
 
   return NextResponse.json({
     data: {
-      category,
-      courses: courses.filter((course) => course.categoryId === category.id),
+      category: details.category,
+      courses: details.discovery.courses,
     },
   });
 }

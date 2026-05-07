@@ -8,6 +8,7 @@ function toCartItem(course: Course): CartItem {
   return {
     id: `cart-${course.id}`,
     courseId: course.id,
+    slug: course.slug,
     title: course.title,
     thumbnail: course.thumbnail,
     price: course.price,

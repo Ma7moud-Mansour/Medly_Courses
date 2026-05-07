@@ -6,13 +6,16 @@ import { buildFeedbackPath, getActionErrorMessage } from "@/lib/actions/server-a
 import { requireServerRole } from "@/lib/auth/server-session";
 import {
   createAdminCourse,
+  createAdminCategory,
   createCourseLesson,
   createCourseSection,
   createLessonAttachment,
   deleteLessonAttachment,
+  deleteAdminCategory,
   createAdminInstructor,
   updateAdminInstructor,
   deleteAdminCourse,
+  updateAdminCategory,
   updateAdminCourse,
   updateLessonAttachment,
   updateCourseLesson,
@@ -20,6 +23,7 @@ import {
 } from "@/lib/content/repository";
 import {
   adminAttachmentSchema,
+  adminCategorySchema,
   adminCourseSchema,
   adminInstructorSchema,
   adminLessonSchema,
@@ -96,6 +100,10 @@ export async function createAdminCourseAction(formData: FormData) {
     });
 
     revalidatePath("/admin/courses");
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    revalidatePath("/instructors");
     destination = buildFeedbackPath(`/admin/courses/${course.id}/edit`, {
       flash: "course-created",
     });
@@ -155,6 +163,11 @@ export async function updateAdminCourseAction(formData: FormData) {
 
     revalidatePath("/admin/courses");
     revalidatePath(editPath);
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath(`/courses/${parsed.slug}`);
+    revalidatePath("/categories");
+    revalidatePath("/instructors");
     destination = buildFeedbackPath(editPath, { flash: "course-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -554,6 +567,9 @@ export async function createAdminInstructorAction(formData: FormData) {
     });
 
     revalidatePath("/admin/instructors");
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/instructors");
     destination = buildFeedbackPath("/admin/instructors", { flash: "instructor-created" });
   } catch (error) {
     destination = buildFeedbackPath("/admin/instructors/new", {
@@ -593,6 +609,10 @@ export async function updateAdminInstructorAction(formData: FormData) {
 
     revalidatePath("/admin/instructors");
     revalidatePath(editPath);
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/instructors");
+    revalidatePath(`/instructors/${parsed.slug}`);
     destination = buildFeedbackPath(editPath, { flash: "instructor-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -615,10 +635,106 @@ export async function deleteAdminCourseAction(formData: FormData) {
     });
 
     revalidatePath("/admin/courses");
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    revalidatePath("/instructors");
     destination = buildFeedbackPath("/admin/courses", { flash: "course-deleted" });
   } catch (error) {
     destination = buildFeedbackPath(`/admin/courses/${courseId}/edit`, {
       error: getActionErrorMessage(error, "Unable to delete course."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function createAdminCategoryAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  let destination = "/admin/categories";
+
+  try {
+    const parsed = adminCategorySchema.parse({
+      name: formData.get("name"),
+      slug: formData.get("slug"),
+      description: formData.get("description"),
+      icon: formData.get("icon"),
+    });
+
+    await createAdminCategory({
+      adminId: actor.userId,
+      name: parsed.name,
+      slug: parsed.slug,
+      description: parsed.description || undefined,
+      icon: parsed.icon || undefined,
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    destination = buildFeedbackPath("/admin/categories", { flash: "category-created" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/categories", {
+      error: getActionErrorMessage(error, "Unable to create category."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateAdminCategoryAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const categoryId = String(formData.get("categoryId") ?? "");
+  let destination = "/admin/categories";
+
+  try {
+    const parsed = adminCategorySchema.parse({
+      name: formData.get("name"),
+      slug: formData.get("slug"),
+      description: formData.get("description"),
+      icon: formData.get("icon"),
+    });
+
+    await updateAdminCategory({
+      adminId: actor.userId,
+      categoryId,
+      name: parsed.name,
+      slug: parsed.slug,
+      description: parsed.description || undefined,
+      icon: parsed.icon || undefined,
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    destination = buildFeedbackPath("/admin/categories", { flash: "category-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/categories", {
+      error: getActionErrorMessage(error, "Unable to update category."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteAdminCategoryAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const categoryId = String(formData.get("categoryId") ?? "");
+  let destination = "/admin/categories";
+
+  try {
+    await deleteAdminCategory({
+      adminId: actor.userId,
+      categoryId,
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    destination = buildFeedbackPath("/admin/categories", { flash: "category-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/categories", {
+      error: getActionErrorMessage(error, "Cannot delete this category while it has assigned courses."),
     });
   }
 

@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { recordCouponUsage, validateCouponForSubtotal } from "@/lib/coupons/repository";
 import { buildProtectedAssetUrl, signProtectedAssetToken } from "@/lib/media/access";
 import type { Order, PaymentMethod } from "@/types";
 
@@ -40,6 +41,9 @@ export type CheckoutPaymentInstructions = {
   generatedCodeLabel: string;
   recipient?: CheckoutPaymentRecipient;
   recipients: CheckoutPaymentRecipient[];
+  subtotal: number;
+  discount: number;
+  couponCode?: string;
   total: number;
   courseTitles: string[];
 };
@@ -253,6 +257,7 @@ async function buildReceiptPreviewUrl(input: {
 export async function createVodafoneCashOrder(input: {
   userId: string;
   courseIds: string[];
+  couponCode?: string;
   transactionReference?: string;
   senderPhone?: string;
   receipt: ManualReceiptMetadata;
@@ -313,6 +318,15 @@ export async function createVodafoneCashOrder(input: {
   }
 
   const subtotal = purchasableCourses.reduce((sum, course) => sum + effectivePrice(course), 0);
+  const coupon = input.couponCode
+    ? await validateCouponForSubtotal({
+        code: input.couponCode,
+        subtotal,
+        userId: input.userId,
+      })
+    : undefined;
+  const discount = coupon?.discountAmount ?? 0;
+  const total = Math.max(subtotal - discount, 0);
   const recipientKeys = new Set(
     purchasableCourses.map((course) => `${course.instructor.id}:${course.instructor.vodafoneCashNumber ?? ""}`),
   );
@@ -333,8 +347,8 @@ export async function createVodafoneCashOrder(input: {
       data: {
         userId: input.userId,
         subtotal,
-        discount: 0,
-        total: subtotal,
+        discount,
+        total,
         status: "waiting_review",
         paymentMethod: "vodafone_cash",
         internalPaymentCode,
@@ -378,6 +392,13 @@ export async function createVodafoneCashOrder(input: {
       },
     });
 
+    if (coupon) {
+      await recordCouponUsage(tx, {
+        couponId: coupon.id,
+        userId: input.userId,
+      });
+    }
+
     return createdOrder;
   });
 
@@ -418,7 +439,10 @@ export async function listStudentOrders(userId: string) {
   );
 }
 
-export async function getCheckoutPaymentInstructions(courseIds: string[]): Promise<CheckoutPaymentInstructions> {
+export async function getCheckoutPaymentInstructions(
+  courseIds: string[],
+  couponCode?: string,
+): Promise<CheckoutPaymentInstructions> {
   const normalizedCourseIds = Array.from(new Set(courseIds.filter(Boolean)));
 
   if (!normalizedCourseIds.length) {
@@ -427,6 +451,8 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
       message: "Add at least one course to see the correct instructor Vodafone Cash number.",
       generatedCodeLabel: "Generated automatically after submission",
       recipients: [],
+      subtotal: 0,
+      discount: 0,
       total: 0,
       courseTitles: [],
     };
@@ -457,6 +483,8 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
       message: "The selected courses are not available for checkout.",
       generatedCodeLabel: "Generated automatically after submission",
       recipients: [],
+      subtotal: 0,
+      discount: 0,
       total: 0,
       courseTitles: [],
     };
@@ -481,8 +509,41 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
 
   const recipients = Array.from(grouped.values());
   const missingRecipient = recipients.find((recipient) => !recipient.vodafoneCashNumber);
-  const total = courses.reduce((sum, course) => sum + effectivePrice(course), 0);
+  const subtotal = courses.reduce((sum, course) => sum + effectivePrice(course), 0);
+  let coupon:
+    | {
+        code: string;
+        discountAmount: number;
+      }
+    | undefined;
+
+  if (couponCode) {
+    try {
+      coupon = await validateCouponForSubtotal({
+        code: couponCode,
+        subtotal,
+      });
+    } catch (error) {
+      return {
+        canSubmit: false,
+        message: error instanceof Error ? error.message : "Coupon code is invalid.",
+        generatedCodeLabel: "Generated automatically after submission",
+        recipients,
+        subtotal,
+        discount: 0,
+        total: subtotal,
+        courseTitles: courses.map((course) => course.title),
+      };
+    }
+  }
+
+  const discount = coupon?.discountAmount ?? 0;
+  const total = Math.max(subtotal - discount, 0);
   const courseTitles = courses.map((course) => course.title);
+
+  if (recipients.length === 1 && recipients[0]) {
+    recipients[0].total = total;
+  }
 
   if (missingRecipient) {
     return {
@@ -490,6 +551,9 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
       message: `${missingRecipient.instructorName} does not have a Vodafone Cash number configured yet.`,
       generatedCodeLabel: "Generated automatically after submission",
       recipients,
+      subtotal,
+      discount,
+      couponCode: coupon?.code,
       total,
       courseTitles,
     };
@@ -501,6 +565,9 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
       message: "Your cart includes courses for multiple instructors. Please checkout one instructor's courses at a time.",
       generatedCodeLabel: "Generated automatically after submission",
       recipients,
+      subtotal,
+      discount,
+      couponCode: coupon?.code,
       total,
       courseTitles,
     };
@@ -512,6 +579,9 @@ export async function getCheckoutPaymentInstructions(courseIds: string[]): Promi
     generatedCodeLabel: "Generated automatically after submission",
     recipient: recipients[0],
     recipients,
+    subtotal,
+    discount,
+    couponCode: coupon?.code,
     total,
     courseTitles,
   };

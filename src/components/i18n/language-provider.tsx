@@ -141,7 +141,7 @@ const dictionary: Record<string, string> = {
   "حذف": "Remove",
   "وصول كامل، موارد، وحفظ تقدم داخل حسابك.": "Full access, resources, and saved progress in your account.",
   "تم تطبيق الكود.": "Coupon applied.",
-  "الكود غير صالح. جرب MEDLY20 أو FIRST100.": "Invalid code. Try MEDLY20 or FIRST100.",
+  "الكود غير صالح.": "Invalid coupon code.",
   "يجب تسجيل الدخول قبل الدفع. سيتم تحويلك للدخول مع حفظ السلة.": "You must log in before payment. You will be redirected while your cart stays saved.",
   "اكتشاف الكورسات": "Course Discovery",
   "لا توجد نتائج بنفس الفلاتر": "No results match these filters",

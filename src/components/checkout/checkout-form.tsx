@@ -39,6 +39,7 @@ export function CheckoutForm() {
   const initialized = useAuthStore((state) => state.initialized);
   const user = useAuthStore((state) => state.user);
   const items = useCartStore((state) => state.items);
+  const coupon = useCartStore((state) => state.coupon);
   const clearCart = useCartStore((state) => state.clearCart);
   const fallbackTotal = useCartStore((state) => state.getTotal());
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
@@ -83,6 +84,7 @@ export function CheckoutForm() {
         },
         body: JSON.stringify({
           courseIds: items.map((item) => item.courseId),
+          couponCode: coupon,
         }),
       });
 
@@ -99,7 +101,7 @@ export function CheckoutForm() {
     return () => {
       canceled = true;
     };
-  }, [initialized, isAuthenticated, items]);
+  }, [coupon, initialized, isAuthenticated, items]);
 
   const onSubmit = handleSubmit(async (values) => {
     if (!items.length) {
@@ -128,6 +130,10 @@ export function CheckoutForm() {
 
     if (values.senderPhone) {
       formData.append("senderPhone", values.senderPhone);
+    }
+
+    if (coupon) {
+      formData.append("couponCode", coupon);
     }
 
     items.forEach((item) => {

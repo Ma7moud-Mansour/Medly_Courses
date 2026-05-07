@@ -808,6 +808,62 @@ export async function updateCourseSection(input: {
   });
 }
 
+export async function deleteCourseSection(input: {
+  adminId: string;
+  sectionId: string;
+}) {
+  const result = await prisma.$transaction(async (tx) => {
+    const section = await tx.courseChapter.delete({
+      where: {
+        id: input.sectionId,
+      },
+      include: {
+        lessons: {
+          include: {
+            videoAsset: true,
+            attachments: true,
+          },
+        },
+      },
+    });
+
+    await refreshCourseDerivedFields(tx, section.courseId);
+    await createContentAuditLog(tx, {
+      adminId: input.adminId,
+      courseId: section.courseId,
+      action: "delete_course_section",
+      entityType: "CourseChapter",
+      entityId: section.id,
+      metadata: {
+        title: section.title,
+        lessonsCount: section.lessons.length,
+      },
+    });
+
+    return {
+      sectionId: section.id,
+      removedAssets: section.lessons.flatMap((lesson) => [
+        ...(lesson.videoAsset
+          ? [
+              {
+                storageKey: lesson.videoAsset.storageKey,
+                url: lesson.videoAsset.playbackUrl,
+              },
+            ]
+          : []),
+        ...lesson.attachments.map((attachment) => ({
+          storageKey: attachment.storageKey,
+          url: attachment.fileUrl,
+        })),
+      ]),
+    };
+  });
+
+  await Promise.all(result.removedAssets.map((asset) => deleteStoredAsset(asset)));
+
+  return result.sectionId;
+}
+
 async function syncLessonVideoAsset(
   tx: Prisma.TransactionClient,
   lessonId: string,
@@ -1044,6 +1100,63 @@ export async function updateCourseLesson(input: {
   }
 
   return result.lesson;
+}
+
+export async function deleteCourseLesson(input: {
+  adminId: string;
+  lessonId: string;
+}) {
+  const result = await prisma.$transaction(async (tx) => {
+    const lesson = await tx.courseLesson.delete({
+      where: {
+        id: input.lessonId,
+      },
+      include: {
+        chapter: {
+          select: {
+            courseId: true,
+          },
+        },
+        videoAsset: true,
+        attachments: true,
+      },
+    });
+
+    await refreshCourseDerivedFields(tx, lesson.chapter.courseId);
+    await createContentAuditLog(tx, {
+      adminId: input.adminId,
+      courseId: lesson.chapter.courseId,
+      action: "delete_course_lesson",
+      entityType: "CourseLesson",
+      entityId: lesson.id,
+      metadata: {
+        title: lesson.title,
+        lessonType: lesson.lessonType,
+      },
+    });
+
+    return {
+      lessonId: lesson.id,
+      removedAssets: [
+        ...(lesson.videoAsset
+          ? [
+              {
+                storageKey: lesson.videoAsset.storageKey,
+                url: lesson.videoAsset.playbackUrl,
+              },
+            ]
+          : []),
+        ...lesson.attachments.map((attachment) => ({
+          storageKey: attachment.storageKey,
+          url: attachment.fileUrl,
+        })),
+      ],
+    };
+  });
+
+  await Promise.all(result.removedAssets.map((asset) => deleteStoredAsset(asset)));
+
+  return result.lessonId;
 }
 
 export async function createLessonAttachment(input: {
@@ -1483,6 +1596,33 @@ export async function updateAdminInstructor(input: {
   });
 
   return result;
+}
+
+export async function deleteAdminInstructor(input: { adminId: string; instructorId: string }) {
+  const coursesCount = await prisma.course.count({
+    where: {
+      instructorId: input.instructorId,
+    },
+  });
+
+  if (coursesCount > 0) {
+    throw new Error("Cannot delete an instructor while courses are assigned to them.");
+  }
+
+  await prisma.instructor.delete({
+    where: {
+      id: input.instructorId,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "instructor.deleted",
+      entityType: "instructor",
+      entityId: input.instructorId,
+    },
+  });
 }
 
 export async function deleteAdminCourse(input: { adminId: string; courseId: string }) {

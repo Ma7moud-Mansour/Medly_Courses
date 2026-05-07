@@ -15,8 +15,9 @@ export async function POST(request: Request) {
   const courseIds = Array.isArray(payload?.courseIds)
     ? payload.courseIds.map((value: unknown) => String(value)).filter(Boolean)
     : [];
+  const couponCode = typeof payload?.couponCode === "string" ? payload.couponCode : undefined;
 
-  const instructions = await getCheckoutPaymentInstructions(courseIds);
+  const instructions = await getCheckoutPaymentInstructions(courseIds, couponCode);
 
   return NextResponse.json({ data: instructions });
 }

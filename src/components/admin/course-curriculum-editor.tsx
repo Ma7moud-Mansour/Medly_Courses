@@ -4,6 +4,8 @@ import {
   createCourseSectionAction,
   createLessonAttachmentAction,
   deleteLessonAttachmentAction,
+  deleteCourseLessonAction,
+  deleteCourseSectionAction,
   updateCourseLessonAction,
   updateCourseSectionAction,
   updateLessonAttachmentAction,
@@ -14,6 +16,8 @@ import type {
   AdminCourseEditorSection,
 } from "@/lib/content/repository";
 import type { LessonAttachment } from "@/types";
+
+const VIDEO_ACCEPT = ".mp4,.webm,.mov,.m4v,.mkv,.avi,.mpeg,.mpg,video/mp4,video/webm,video/quicktime,video/x-m4v,video/x-matroska,video/x-msvideo,video/mpeg";
 
 function ToggleField({
   name,
@@ -286,7 +290,7 @@ function LessonEditor({
             </div>
 
             <MediaUploadField
-              accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
+              accept={VIDEO_ACCEPT}
               current={
                 lesson.videoAsset
                   ? {
@@ -365,6 +369,14 @@ function LessonEditor({
 
           <button className="min-h-10 rounded-lg bg-primary px-4 text-sm font-black text-white" type="submit">
             حفظ الدرس
+          </button>
+        </form>
+
+        <form action={deleteCourseLessonAction} className="rounded-lg border border-danger/30 bg-danger/5 p-4">
+          <input name="courseId" type="hidden" value={courseId} />
+          <input name="lessonId" type="hidden" value={lesson.id} />
+          <button className="rounded-lg border border-danger/40 px-4 py-2 text-sm font-black text-danger" type="submit">
+            حذف الدرس
           </button>
         </form>
 
@@ -469,7 +481,7 @@ function NewLessonForm({
         </div>
 
         <MediaUploadField
-          accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
+          accept={VIDEO_ACCEPT}
           fieldNames={{
             url: "videoPlaybackUrl",
             storageKey: "videoStorageKey",
@@ -571,6 +583,14 @@ function SectionEditor({
 
           <button className="min-h-10 rounded-lg bg-primary px-4 text-sm font-black text-white" type="submit">
             حفظ القسم
+          </button>
+        </form>
+
+        <form action={deleteCourseSectionAction} className="rounded-lg border border-danger/30 bg-danger/5 p-4">
+          <input name="courseId" type="hidden" value={courseId} />
+          <input name="sectionId" type="hidden" value={section.id} />
+          <button className="rounded-lg border border-danger/40 px-4 py-2 text-sm font-black text-danger" type="submit">
+            حذف القسم
           </button>
         </form>
 

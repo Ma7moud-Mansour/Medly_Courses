@@ -708,6 +708,51 @@ export async function listAdminReviewsSummary() {
   }));
 }
 
+export async function deleteAdminReview(input: { adminId: string; reviewId: string }) {
+  const deletedReview = await prisma.review.delete({
+    where: {
+      id: input.reviewId,
+    },
+    select: {
+      id: true,
+      courseId: true,
+      userId: true,
+    },
+  });
+
+  const aggregate = await prisma.review.aggregate({
+    where: {
+      courseId: deletedReview.courseId,
+    },
+    _count: {
+      _all: true,
+    },
+    _avg: {
+      rating: true,
+    },
+  });
+
+  await prisma.course.update({
+    where: {
+      id: deletedReview.courseId,
+    },
+    data: {
+      reviewsCount: aggregate._count._all,
+      rating: Number((aggregate._avg.rating ?? 0).toFixed(1)),
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      targetUserId: deletedReview.userId,
+      action: "review.deleted",
+      entityType: "review",
+      entityId: deletedReview.id,
+    },
+  });
+}
+
 export async function listAdminCouponsSummary() {
   const coupons = await prisma.coupon.findMany({
     include: {
@@ -736,6 +781,115 @@ export async function listAdminCouponsSummary() {
     usagesCount: number;
     usageRemaining?: number;
   }));
+}
+
+function parseCouponExpiry(value?: string) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const date = new Date(trimmed);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Coupon expiry date is invalid.");
+  }
+
+  return date;
+}
+
+function normalizeCouponCodeInput(code: string) {
+  return code.trim().toUpperCase();
+}
+
+export async function createAdminCoupon(input: {
+  adminId: string;
+  code: string;
+  type: "percent" | "fixed";
+  value: number;
+  minOrderAmount?: number;
+  maxUsage?: number;
+  expiresAt?: string;
+  active: boolean;
+}) {
+  const coupon = await prisma.coupon.create({
+    data: {
+      code: normalizeCouponCodeInput(input.code),
+      type: input.type,
+      value: input.value,
+      minOrderAmount: input.minOrderAmount ?? null,
+      maxUsage: input.maxUsage ?? null,
+      expiresAt: parseCouponExpiry(input.expiresAt),
+      active: input.active,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "coupon.created",
+      entityType: "coupon",
+      entityId: coupon.id,
+    },
+  });
+
+  return coupon;
+}
+
+export async function updateAdminCoupon(input: {
+  adminId: string;
+  couponId: string;
+  code: string;
+  type: "percent" | "fixed";
+  value: number;
+  minOrderAmount?: number;
+  maxUsage?: number;
+  expiresAt?: string;
+  active: boolean;
+}) {
+  const coupon = await prisma.coupon.update({
+    where: {
+      id: input.couponId,
+    },
+    data: {
+      code: normalizeCouponCodeInput(input.code),
+      type: input.type,
+      value: input.value,
+      minOrderAmount: input.minOrderAmount ?? null,
+      maxUsage: input.maxUsage ?? null,
+      expiresAt: parseCouponExpiry(input.expiresAt),
+      active: input.active,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "coupon.updated",
+      entityType: "coupon",
+      entityId: coupon.id,
+    },
+  });
+
+  return coupon;
+}
+
+export async function deleteAdminCoupon(input: { adminId: string; couponId: string }) {
+  await prisma.coupon.delete({
+    where: {
+      id: input.couponId,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: input.adminId,
+      action: "coupon.deleted",
+      entityType: "coupon",
+      entityId: input.couponId,
+    },
+  });
 }
 
 export async function getAdminAnalyticsData() {

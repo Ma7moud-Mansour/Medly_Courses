@@ -78,6 +78,12 @@ export function MediaUploadField({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const Icon = KIND_ICONS[kind];
   const canPreview = Boolean(asset.url && (asset.url.startsWith("/") || asset.url.startsWith("http")));
+  const manualVideoUrl =
+    kind === "video" && asset.url && asset.provider !== "local" && !asset.url.startsWith("medly-protected://")
+      ? asset.url
+      : "";
+  const manualVideoProvider =
+    kind === "video" && asset.provider && asset.provider !== "local" ? asset.provider : "custom";
 
   const uploadFile = (file: File) => {
     setError(undefined);
@@ -93,10 +99,14 @@ export function MediaUploadField({
           body: formData,
         });
 
-        const payload = await response.json();
+        const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload.error || "Upload failed.");
+          throw new Error(payload?.error || `Upload failed with status ${response.status}.`);
+        }
+
+        if (!payload?.data) {
+          throw new Error("Upload finished without file metadata.");
         }
 
         setAsset({
@@ -206,6 +216,30 @@ export function MediaUploadField({
         </div>
 
         {error ? <p className="text-xs font-bold text-danger">{error}</p> : null}
+
+        {kind === "video" ? (
+          <div className="grid gap-3 border-t border-border pt-3 md:grid-cols-[1fr_220px]">
+            <label className="grid gap-2 text-sm font-bold">
+              رابط فيديو خارجي
+              <input
+                className="form-input"
+                defaultValue={manualVideoUrl}
+                name="manualVideoPlaybackUrl"
+                placeholder="https://..."
+                type="url"
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-bold">
+              مزود الرابط
+              <select className="form-input" defaultValue={manualVideoProvider} name="manualVideoProvider">
+                <option value="custom">رابط مباشر</option>
+                <option value="youtube">YouTube</option>
+                <option value="vimeo">Vimeo</option>
+                <option value="bunny">Bunny</option>
+              </select>
+            </label>
+          </div>
+        ) : null}
       </div>
 
       <input name={fieldNames.url} type="hidden" value={asset.url ?? ""} />

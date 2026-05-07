@@ -98,6 +98,7 @@ export async function POST(request: Request) {
     const order = await createVodafoneCashOrder({
       userId: session.userId,
       courseIds,
+      couponCode: getOptionalFormText(formData, "couponCode"),
       transactionReference: parsed.data.transactionReference || undefined,
       senderPhone: parsed.data.senderPhone || undefined,
       receipt: {

@@ -101,7 +101,29 @@ export const publicInstructorListingSchema = z.object({
 
 export const couponSchema = z.object({
   code: z.string().min(3, "Enter a coupon code").max(40),
+  subtotal: z.coerce.number().int().min(0).optional(),
 });
+
+export const adminCouponSchema = z
+  .object({
+    couponId: z.string().min(1).optional(),
+    code: z.string().trim().min(3, "Enter a coupon code").max(40),
+    type: z.enum(["percent", "fixed"]),
+    value: z.coerce.number().int().min(1),
+    minOrderAmount: z.coerce.number().int().min(0).optional(),
+    maxUsage: z.coerce.number().int().min(1).optional(),
+    expiresAt: z.string().trim().optional().or(z.literal("")),
+    active: z.boolean().default(false),
+  })
+  .superRefine((coupon, ctx) => {
+    if (coupon.type === "percent" && coupon.value > 100) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Percent coupons cannot be more than 100%.",
+        path: ["value"],
+      });
+    }
+  });
 
 export const adminCourseSchema = z.object({
   title: z.string().min(4, "Course title is required"),

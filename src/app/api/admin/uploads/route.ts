@@ -4,6 +4,7 @@ import { deleteStoredAsset, getUploadConstraint, isAllowedUploadType, saveUpload
 import { adminUploadSchema } from "@/lib/validators/schemas";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 function inferMimeType(fileName: string) {
   const normalized = fileName.toLowerCase();
@@ -12,6 +13,10 @@ function inferMimeType(fileName: string) {
   if (normalized.endsWith(".mp4")) return "video/mp4";
   if (normalized.endsWith(".webm")) return "video/webm";
   if (normalized.endsWith(".mov")) return "video/quicktime";
+  if (normalized.endsWith(".m4v")) return "video/x-m4v";
+  if (normalized.endsWith(".mkv")) return "video/x-matroska";
+  if (normalized.endsWith(".avi")) return "video/x-msvideo";
+  if (normalized.endsWith(".mpeg") || normalized.endsWith(".mpg")) return "video/mpeg";
   if (normalized.endsWith(".jpg") || normalized.endsWith(".jpeg")) return "image/jpeg";
   if (normalized.endsWith(".png")) return "image/png";
   if (normalized.endsWith(".webp")) return "image/webp";
@@ -52,13 +57,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No valid file was provided." }, { status: 400 });
     }
 
-    const mimeType = fileEntry.type || inferMimeType(fileEntry.name);
+    const browserMimeType = fileEntry.type || "";
+    const inferredMimeType = inferMimeType(fileEntry.name);
+    const mimeType =
+      !browserMimeType || browserMimeType === "application/octet-stream" ? inferredMimeType : browserMimeType;
     const constraints = getUploadConstraint(parsed.data.kind);
 
     if (!isAllowedUploadType(parsed.data.kind, mimeType)) {
       return NextResponse.json(
         {
           error: "This file type is not allowed for the selected field.",
+          receivedMimeType: mimeType,
           allowedMimeTypes: constraints.allowedMimeTypes,
         },
         { status: 415 },
@@ -69,6 +78,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "The uploaded file exceeds the allowed size limit.",
+          fileSizeBytes: fileEntry.size,
           maxBytes: constraints.maxBytes,
         },
         { status: 413 },
@@ -101,7 +111,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "You are not allowed to perform this action." }, { status: 401 });
     }
 
-    return NextResponse.json({ error: "The upload could not be completed right now." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "";
+    const status = message.toLowerCase().includes("body") || message.toLowerCase().includes("size") ? 413 : 500;
+
+    return NextResponse.json(
+      {
+        error:
+          status === 413
+            ? "The uploaded file is too large for this server. Use an external video URL for large lessons."
+            : "The upload could not be completed right now.",
+      },
+      { status },
+    );
   }
 }
 

@@ -23,8 +23,16 @@ const uploadConstraints: Record<
   }
 > = {
   video: {
-    allowedMimeTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"],
-    maxBytes: 250 * 1024 * 1024,
+    allowedMimeTypes: [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+      "video/x-m4v",
+      "video/x-matroska",
+      "video/x-msvideo",
+      "video/mpeg",
+    ],
+    maxBytes: 1024 * 1024 * 1024,
     directory: "videos",
     visibility: "private",
   },
@@ -98,6 +106,10 @@ function normalizeExtension(fileName: string, mimeType: string) {
   if (mimeType === "video/mp4") return ".mp4";
   if (mimeType === "video/webm") return ".webm";
   if (mimeType === "video/quicktime") return ".mov";
+  if (mimeType === "video/x-m4v") return ".m4v";
+  if (mimeType === "video/x-matroska") return ".mkv";
+  if (mimeType === "video/x-msvideo") return ".avi";
+  if (mimeType === "video/mpeg") return ".mpeg";
   if (mimeType === "image/png") return ".png";
   if (mimeType === "image/webp") return ".webp";
   if (mimeType === "image/jpeg") return ".jpg";

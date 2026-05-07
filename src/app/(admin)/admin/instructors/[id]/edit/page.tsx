@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
 import { InstructorForm } from "@/components/admin/instructor-form";
 import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { deleteAdminInstructorAction } from "@/lib/admin/content-actions";
 import { prisma } from "@/lib/db";
 import { requireServerRole } from "@/lib/auth/server-session";
 
@@ -53,6 +55,20 @@ export default async function EditInstructorPage({
       {error ? <ActionFeedbackBanner kind="error" message={error} /> : null}
 
       <InstructorForm instructor={instructor} mode="update" />
+
+      <form action={deleteAdminInstructorAction} className="rounded-2xl border border-danger/30 bg-danger/5 p-5 shadow-sm">
+        <input name="instructorId" type="hidden" value={instructor.id} />
+        <h2 className="text-lg font-black text-danger">حذف الدكتور</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          الحذف يتوقف تلقائيًا لو فيه كورسات مرتبطة بالدكتور، عشان بيانات الطلبة والكورسات تفضل سليمة.
+        </p>
+        <PendingSubmitButton
+          className="mt-4 border-danger/40 text-danger hover:bg-danger/5"
+          label="حذف الدكتور"
+          pendingLabel="جاري الحذف..."
+          variant="outline"
+        />
+      </form>
     </div>
   );
 }

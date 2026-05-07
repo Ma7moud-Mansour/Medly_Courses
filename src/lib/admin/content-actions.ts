@@ -13,8 +13,11 @@ import {
   deleteLessonAttachment,
   deleteAdminCategory,
   createAdminInstructor,
+  deleteAdminInstructor,
   updateAdminInstructor,
   deleteAdminCourse,
+  deleteCourseLesson,
+  deleteCourseSection,
   updateAdminCategory,
   updateAdminCourse,
   updateLessonAttachment,
@@ -22,8 +25,15 @@ import {
   updateCourseSection,
 } from "@/lib/content/repository";
 import {
+  createAdminCoupon,
+  deleteAdminCoupon,
+  deleteAdminReview,
+  updateAdminCoupon,
+} from "@/lib/admin/repository";
+import {
   adminAttachmentSchema,
   adminCategorySchema,
+  adminCouponSchema,
   adminCourseSchema,
   adminInstructorSchema,
   adminLessonSchema,
@@ -251,15 +261,47 @@ export async function updateCourseSectionAction(formData: FormData) {
   redirect(destination);
 }
 
+export async function deleteCourseSectionAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const sectionId = String(formData.get("sectionId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    await deleteCourseSection({
+      adminId: actor.userId,
+      sectionId,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    revalidatePath("/instructors");
+    destination = buildFeedbackPath(editPath, { flash: "section-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to delete the section."),
+    });
+  }
+
+  redirect(destination);
+}
+
 function readLessonVideo(formData: FormData) {
-  const playbackUrl = getOptionalText(formData.get("videoPlaybackUrl"));
+  const manualPlaybackUrl = getOptionalText(formData.get("manualVideoPlaybackUrl"));
+  const uploadPlaybackUrl = getOptionalText(formData.get("videoPlaybackUrl"));
+  const playbackUrl = manualPlaybackUrl ?? uploadPlaybackUrl;
+  const usesManualVideo = Boolean(manualPlaybackUrl);
 
   if (!playbackUrl) {
     return undefined;
   }
 
   return {
-    provider: String(formData.get("videoProvider") ?? "custom") as
+    provider: String(formData.get(usesManualVideo ? "manualVideoProvider" : "videoProvider") ?? "custom") as
       | "local"
       | "cloudinary"
       | "uploadthing"
@@ -268,13 +310,13 @@ function readLessonVideo(formData: FormData) {
       | "bunny"
       | "custom",
     providerAssetId: getOptionalText(formData.get("videoProviderAssetId")),
-    fileName: getOptionalText(formData.get("videoFileName")),
-    mimeType: getOptionalText(formData.get("videoMimeType")),
-    fileSizeBytes: getOptionalNumber(formData.get("videoFileSizeBytes")),
+    fileName: usesManualVideo ? undefined : getOptionalText(formData.get("videoFileName")),
+    mimeType: usesManualVideo ? undefined : getOptionalText(formData.get("videoMimeType")),
+    fileSizeBytes: usesManualVideo ? undefined : getOptionalNumber(formData.get("videoFileSizeBytes")),
     playbackUrl,
     thumbnailUrl: getOptionalText(formData.get("videoThumbnailUrl")),
-    durationSeconds: getOptionalNumber(formData.get("videoDurationSeconds")),
-    storageKey: getOptionalText(formData.get("videoStorageKey")),
+    durationSeconds: usesManualVideo ? undefined : getOptionalNumber(formData.get("videoDurationSeconds")),
+    storageKey: usesManualVideo ? undefined : getOptionalText(formData.get("videoStorageKey")),
     visibilityStatus: String(formData.get("videoVisibilityStatus") ?? "ready") as
       | "draft"
       | "processing"
@@ -407,6 +449,35 @@ export async function updateCourseLessonAction(formData: FormData) {
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
       error: getActionErrorMessage(error, "Unable to save the lesson changes."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteCourseLessonAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  const editPath = `/admin/courses/${courseId}/edit`;
+  let destination = editPath;
+
+  try {
+    await deleteCourseLesson({
+      adminId: actor.userId,
+      lessonId,
+    });
+
+    revalidatePath("/admin/courses");
+    revalidatePath(editPath);
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/categories");
+    revalidatePath("/instructors");
+    destination = buildFeedbackPath(editPath, { flash: "lesson-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(editPath, {
+      error: getActionErrorMessage(error, "Unable to delete the lesson."),
     });
   }
 
@@ -623,6 +694,31 @@ export async function updateAdminInstructorAction(formData: FormData) {
   redirect(destination);
 }
 
+export async function deleteAdminInstructorAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const instructorId = String(formData.get("instructorId") ?? "");
+  let destination = "/admin/instructors";
+
+  try {
+    await deleteAdminInstructor({
+      adminId: actor.userId,
+      instructorId,
+    });
+
+    revalidatePath("/admin/instructors");
+    revalidatePath("/");
+    revalidatePath("/courses");
+    revalidatePath("/instructors");
+    destination = buildFeedbackPath("/admin/instructors", { flash: "instructor-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(`/admin/instructors/${instructorId}/edit`, {
+      error: getActionErrorMessage(error, "Cannot delete this instructor while courses are assigned."),
+    });
+  }
+
+  redirect(destination);
+}
+
 export async function deleteAdminCourseAction(formData: FormData) {
   const actor = await requireContentAdmin();
   const courseId = String(formData.get("courseId") ?? "");
@@ -672,6 +768,7 @@ export async function createAdminCategoryAction(formData: FormData) {
     revalidatePath("/admin/categories");
     revalidatePath("/courses");
     revalidatePath("/categories");
+    revalidatePath(`/categories/${parsed.slug}`);
     destination = buildFeedbackPath("/admin/categories", { flash: "category-created" });
   } catch (error) {
     destination = buildFeedbackPath("/admin/categories", {
@@ -707,6 +804,7 @@ export async function updateAdminCategoryAction(formData: FormData) {
     revalidatePath("/admin/categories");
     revalidatePath("/courses");
     revalidatePath("/categories");
+    revalidatePath(`/categories/${parsed.slug}`);
     destination = buildFeedbackPath("/admin/categories", { flash: "category-updated" });
   } catch (error) {
     destination = buildFeedbackPath("/admin/categories", {
@@ -735,6 +833,134 @@ export async function deleteAdminCategoryAction(formData: FormData) {
   } catch (error) {
     destination = buildFeedbackPath("/admin/categories", {
       error: getActionErrorMessage(error, "Cannot delete this category while it has assigned courses."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function createAdminCouponAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  let destination = "/admin/coupons";
+
+  try {
+    const parsed = adminCouponSchema.parse({
+      code: formData.get("code"),
+      type: formData.get("type"),
+      value: formData.get("value"),
+      minOrderAmount: getOptionalNumber(formData.get("minOrderAmount")),
+      maxUsage: getOptionalNumber(formData.get("maxUsage")),
+      expiresAt: formData.get("expiresAt"),
+      active: getCheckedValue(formData.get("active")),
+    });
+
+    await createAdminCoupon({
+      adminId: actor.userId,
+      code: parsed.code,
+      type: parsed.type,
+      value: parsed.value,
+      minOrderAmount: parsed.minOrderAmount,
+      maxUsage: parsed.maxUsage,
+      expiresAt: parsed.expiresAt || undefined,
+      active: parsed.active,
+    });
+
+    revalidatePath("/admin/coupons");
+    revalidatePath("/cart");
+    revalidatePath("/checkout");
+    destination = buildFeedbackPath("/admin/coupons", { flash: "coupon-created" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/coupons", {
+      error: getActionErrorMessage(error, "Unable to create coupon."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function updateAdminCouponAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  let destination = "/admin/coupons";
+
+  try {
+    const parsed = adminCouponSchema.parse({
+      couponId: formData.get("couponId"),
+      code: formData.get("code"),
+      type: formData.get("type"),
+      value: formData.get("value"),
+      minOrderAmount: getOptionalNumber(formData.get("minOrderAmount")),
+      maxUsage: getOptionalNumber(formData.get("maxUsage")),
+      expiresAt: formData.get("expiresAt"),
+      active: getCheckedValue(formData.get("active")),
+    });
+
+    await updateAdminCoupon({
+      adminId: actor.userId,
+      couponId: parsed.couponId ?? "",
+      code: parsed.code,
+      type: parsed.type,
+      value: parsed.value,
+      minOrderAmount: parsed.minOrderAmount,
+      maxUsage: parsed.maxUsage,
+      expiresAt: parsed.expiresAt || undefined,
+      active: parsed.active,
+    });
+
+    revalidatePath("/admin/coupons");
+    revalidatePath("/cart");
+    revalidatePath("/checkout");
+    destination = buildFeedbackPath("/admin/coupons", { flash: "coupon-updated" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/coupons", {
+      error: getActionErrorMessage(error, "Unable to update coupon."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteAdminCouponAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const couponId = String(formData.get("couponId") ?? "");
+  let destination = "/admin/coupons";
+
+  try {
+    await deleteAdminCoupon({
+      adminId: actor.userId,
+      couponId,
+    });
+
+    revalidatePath("/admin/coupons");
+    revalidatePath("/cart");
+    revalidatePath("/checkout");
+    destination = buildFeedbackPath("/admin/coupons", { flash: "coupon-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/coupons", {
+      error: getActionErrorMessage(error, "Unable to delete coupon."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteAdminReviewAction(formData: FormData) {
+  const actor = await requireContentAdmin();
+  const reviewId = String(formData.get("reviewId") ?? "");
+  let destination = "/admin/reviews";
+
+  try {
+    await deleteAdminReview({
+      adminId: actor.userId,
+      reviewId,
+    });
+
+    revalidatePath("/admin/reviews");
+    revalidatePath("/");
+    revalidatePath("/courses");
+    destination = buildFeedbackPath("/admin/reviews", { flash: "review-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath("/admin/reviews", {
+      error: getActionErrorMessage(error, "Unable to delete review."),
     });
   }
 

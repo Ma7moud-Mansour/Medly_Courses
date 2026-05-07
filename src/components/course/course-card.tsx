@@ -51,7 +51,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
   const instructorBio = course.instructorBio ?? "شرح طبي منظم ومباشر يختصر عليك وقت المذاكرة.";
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-[#e4eeeb] bg-white shadow-[0_16px_36px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#d0e4de] hover:shadow-[0_24px_48px_rgba(15,23,42,0.11)]">
+    <article className="motion-card group flex h-full flex-col overflow-hidden rounded-lg border border-[#e4eeeb] bg-white shadow-[0_16px_36px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#d0e4de] hover:shadow-[0_24px_48px_rgba(15,23,42,0.11)]">
       <Link className="relative block aspect-[16/9] overflow-hidden bg-[#f2f6f4]" href={`/courses/${course.slug}`}>
         <Image
           fill

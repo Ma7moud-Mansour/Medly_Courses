@@ -233,7 +233,7 @@ nextjs-portal,
 @keyframes medly-fade-up {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -244,7 +244,7 @@ nextjs-portal,
 @keyframes medly-soft-scale {
   from {
     opacity: 0;
-    transform: scale(0.985);
+    transform: scale(0.975);
   }
   to {
     opacity: 1;
@@ -263,23 +263,223 @@ nextjs-portal,
   }
 }
 
+@keyframes medly-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medly-nav-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medly-grid-drift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 48px 48px, 48px 48px;
+  }
+}
+
+@keyframes medly-border-float {
+  0%,
+  100% {
+    transform: rotate(-12deg) translate3d(0, 0, 0);
+    border-radius: 42% 58% 52% 48%;
+  }
+  50% {
+    transform: rotate(-8deg) translate3d(10px, -8px, 0);
+    border-radius: 48% 52% 44% 56%;
+  }
+}
+
+@keyframes medly-float-soft {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes medly-pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08), 0 0 0 0 rgba(14, 95, 92, 0.20);
+  }
+  50% {
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10), 0 0 0 9px rgba(14, 95, 92, 0);
+  }
+}
+
+@keyframes medly-menu-open {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 main section,
 main article,
 main aside {
-  animation: medly-fade-up 460ms ease both;
+  animation: none;
+}
+
+.medly-public-main {
+  animation: medly-page-enter 420ms ease both;
+}
+
+.medly-public-main > section,
+.medly-public-main article,
+.medly-public-main aside,
+.page-header-reveal {
+  animation: medly-fade-up 560ms ease both;
 }
 
 .hero-copy {
-  animation: medly-fade-up 620ms ease both;
+  animation: medly-fade-up 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .hero-preview {
-  animation: medly-slide-preview 700ms ease 120ms both;
+  animation: medly-slide-preview 760ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
 }
 
-main section:nth-of-type(2n),
-main article:nth-of-type(2n) {
+.medly-public-main > section:nth-of-type(2n),
+.medly-public-main article:nth-of-type(2n) {
   animation-delay: 60ms;
+}
+
+.medly-public-main > section:nth-of-type(3n),
+.medly-public-main article:nth-of-type(3n) {
+  animation-delay: 110ms;
+}
+
+.site-nav-animated {
+  animation: medly-nav-drop 440ms ease both;
+}
+
+.site-nav-animated [data-nav-link] {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-nav-animated [data-nav-link]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: 0.35rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0.2);
+  transform-origin: center;
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.site-nav-animated [data-nav-link]:hover::after,
+.site-nav-animated [data-nav-link]:focus-visible::after {
+  opacity: 0.42;
+  transform: scaleX(1);
+}
+
+.mobile-menu-panel {
+  animation: medly-menu-open 220ms ease both;
+}
+
+.page-header-reveal {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header-reveal::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(14, 95, 92, 0.34), transparent);
+}
+
+.page-header-eyebrow {
+  position: relative;
+  display: inline-flex;
+}
+
+.page-header-eyebrow::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  align-self: center;
+  margin-inline-end: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.52;
+}
+
+.motion-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.motion-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 18%, rgba(255, 255, 255, 0.34) 48%, transparent 76%);
+  opacity: 0;
+  transform: translateX(115%) skewX(-16deg);
+}
+
+@media (hover: hover) {
+  .motion-card:hover::after {
+    opacity: 1;
+    transform: translateX(-115%) skewX(-16deg);
+    transition: transform 760ms ease, opacity 180ms ease;
+  }
+}
+
+.medical-grid {
+  animation: medly-grid-drift 28s linear infinite;
+}
+
+.medly-hero-bg::after {
+  animation: medly-border-float 12s ease-in-out infinite;
+}
+
+.hero-preview .pointer-events-none span {
+  animation: medly-float-soft 5s ease-in-out infinite;
+}
+
+.hero-preview .pointer-events-none span:nth-child(2n) {
+  animation-delay: 900ms;
+}
+
+.hero-preview .pointer-events-none span:nth-child(3n) {
+  animation-delay: 1500ms;
+}
+
+.whatsapp-float > button {
+  animation: medly-pulse-ring 2.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

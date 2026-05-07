@@ -8,7 +8,7 @@ export function WhatsappFloating() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-4 left-4 z-40">
+    <div className="whatsapp-float fixed bottom-4 left-4 z-40">
       {open ? (
         <div className="mb-3 w-64 rounded-lg border border-[#e8eeec] bg-white/96 p-3 shadow-[0_16px_42px_rgba(15,23,42,0.09)] backdrop-blur-xl">
           <div className="flex items-start justify-between gap-3">

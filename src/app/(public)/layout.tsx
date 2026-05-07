@@ -7,7 +7,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="medly-public-main flex-1">{children}</main>
       <Footer />
       <WhatsappFloating />
     </div>

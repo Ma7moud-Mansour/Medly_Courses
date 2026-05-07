@@ -82,7 +82,7 @@ export function Navbar() {
 
   return (
     <>
-      <header data-no-translate className="sticky top-0 z-40 border-b border-[#e8eeec] bg-white/95 backdrop-blur-xl">
+      <header data-no-translate className="site-nav-animated sticky top-0 z-40 border-b border-[#e8eeec] bg-white/95 backdrop-blur-xl">
         <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <button
@@ -103,6 +103,7 @@ export function Navbar() {
                 key={item.href}
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#506662] transition duration-200 hover:bg-[#f2f6f4] hover:text-[#0e5f5c]"
                 href={item.href}
+                data-nav-link
               >
                 <item.icon className="h-4 w-4" />
                 {text[item.key as keyof typeof text]}
@@ -191,7 +192,7 @@ export function Navbar() {
         </nav>
 
         <div className={cn("border-t border-border bg-surface md:hidden", !menuOpen && "hidden")}>
-          <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4">
+          <div className="mobile-menu-panel mx-auto grid max-w-7xl gap-2 px-4 py-4">
             <LanguageSwitcher />
             {navItems.map((item) => (
               <Link

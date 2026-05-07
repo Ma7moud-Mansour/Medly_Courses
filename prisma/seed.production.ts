@@ -21,6 +21,27 @@ const FORBIDDEN_DEMO_VALUES = new Set([
   "Student@123456",
 ]);
 
+const DEMO_COURSE_SLUGS = [
+  "clinical-anatomy-essentials",
+  "cardiovascular-physiology",
+  "practical-pharmacology",
+  "general-pathology-foundations",
+  "cardiac-emergency-acls",
+  "usmle-step-1-plan",
+  "osce-history-examination",
+  "neuroanatomy-made-clear",
+  "respiratory-physiology-crash-course",
+  "antibiotics-smart-review",
+  "inflammation-and-healing",
+  "trauma-primary-survey",
+  "mcq-bank-strategy",
+  "clinical-communication",
+  "upper-limb-anatomy-review",
+  "renal-physiology-masterclass",
+  "endocrine-drugs-explained",
+  "lab-interpretation-essentials",
+];
+
 function getRequiredEnv(name: string) {
   const value = process.env[name]?.trim();
 
@@ -60,6 +81,14 @@ async function main() {
   const supportPassword = getOptionalEnv("SEED_SUPPORT_PASSWORD");
 
   const adminPasswordHash = await buildPasswordHash(adminPassword);
+
+  await prisma.course.deleteMany({
+    where: {
+      slug: {
+        in: DEMO_COURSE_SLUGS,
+      },
+    },
+  });
 
   await prisma.user.upsert({
     where: { email: adminEmail },

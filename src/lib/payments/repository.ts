@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { DEMO_COURSE_SLUGS } from "@/lib/course/demo-cleanup";
 import { recordCouponUsage, validateCouponForSubtotal } from "@/lib/coupons/repository";
 import { buildProtectedAssetUrl, signProtectedAssetToken } from "@/lib/media/access";
 import type { Order, PaymentMethod } from "@/types";
@@ -285,6 +286,9 @@ export async function createVodafoneCashOrder(input: {
       where: {
         id: { in: normalizedCourseIds },
         isPublished: true,
+        slug: {
+          notIn: DEMO_COURSE_SLUGS,
+        },
       },
       select: {
         id: true,
@@ -462,6 +466,9 @@ export async function getCheckoutPaymentInstructions(
     where: {
       id: { in: normalizedCourseIds },
       isPublished: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
     },
     select: {
       title: true,

@@ -141,37 +141,7 @@ type CourseSeed = {
   image: string;
 };
 
-const courseSeeds: CourseSeed[] = [
-  ["أساسيات التشريح السريري", "clinical-anatomy-essentials", "cat-anatomy", "inst-1", "سنة أولى", "beginner", true, true, true, "photo-1530497610245-94d3c16cda28"],
-  ["فسيولوجيا القلب والدورة الدموية", "cardiovascular-physiology", "cat-physiology", "inst-1", "سنة ثانية", "intermediate", true, true, true, "photo-1559757148-5c350d0d3c56"],
-  ["علم الأدوية العملي", "practical-pharmacology", "cat-pharmacology", "inst-2", "سنة ثالثة", "intermediate", true, false, true, "photo-1471864190281-a93a3070b6de"],
-  ["الباثولوجي العام من الصفر", "general-pathology-foundations", "cat-pathology", "inst-2", "سنة ثالثة", "beginner", true, true, false, "photo-1579154204601-01588f351e67"],
-  ["طوارئ القلب والإنعاش", "cardiac-emergency-acls", "cat-emergency", "inst-1", "امتياز", "advanced", true, true, true, "photo-1584362917165-526a968579e8"],
-  ["خطة مذاكرة USMLE Step 1", "usmle-step-1-plan", "cat-exams", "inst-1", "امتحانات", "advanced", true, false, true, "photo-1434030216411-0b793f4b4173"],
-  ["OSCE: التاريخ المرضي والفحص", "osce-history-examination", "cat-clinical", "inst-2", "إكلينيكال", "intermediate", true, true, true, "photo-1519494026892-80bbd2d6fd0d"],
-  ["Neuroanatomy بدون رعب", "neuroanatomy-made-clear", "cat-anatomy", "inst-2", "سنة ثانية", "advanced", false, false, false, "photo-1559757175-0eb30cd8c063"],
-  ["Respiratory Physiology Crash Course", "respiratory-physiology-crash-course", "cat-physiology", "inst-1", "سنة ثانية", "intermediate", false, false, false, "photo-1581595219315-a187dd40c322"],
-  ["Antibiotics Smart Review", "antibiotics-smart-review", "cat-pharmacology", "inst-2", "سنة رابعة", "advanced", false, false, true, "photo-1584308666744-24d5c474f2ae"],
-  ["Inflammation and Healing", "inflammation-and-healing", "cat-pathology", "inst-1", "سنة ثالثة", "beginner", false, false, false, "photo-1530026405186-ed1f139313f8"],
-  ["Trauma Primary Survey", "trauma-primary-survey", "cat-emergency", "inst-2", "امتياز", "advanced", false, false, true, "photo-1583912267550-7a38339c0a9e"],
-  ["MCQ Bank Strategy", "mcq-bank-strategy", "cat-exams", "inst-1", "امتحانات", "intermediate", false, false, true, "photo-1454165804606-c3d57bc86b40"],
-  ["Clinical Communication", "clinical-communication", "cat-clinical", "inst-2", "إكلينيكال", "beginner", false, false, false, "photo-1573496359142-b8d87734a5a2"],
-  ["Upper Limb Anatomy Review", "upper-limb-anatomy-review", "cat-anatomy", "inst-1", "سنة أولى", "beginner", false, false, true, "photo-1551190822-a9333d879b1f"],
-  ["Renal Physiology Masterclass", "renal-physiology-masterclass", "cat-physiology", "inst-2", "سنة ثانية", "advanced", false, false, false, "photo-1505751172876-fa1923c5c528"],
-  ["Endocrine Drugs Explained", "endocrine-drugs-explained", "cat-pharmacology", "inst-1", "سنة رابعة", "intermediate", false, false, false, "photo-1511174511562-5f97f4f4e0c8"],
-  ["Lab Interpretation Essentials", "lab-interpretation-essentials", "cat-clinical", "inst-2", "امتياز", "intermediate", true, false, true, "photo-1576671081837-49000212a370"],
-].map(([title, slug, categoryId, instructorId, year, level, featured, bestseller, examPrep, image]) => ({
-  title,
-  slug,
-  categoryId,
-  instructorId,
-  year,
-  level,
-  featured,
-  bestseller,
-  examPrep,
-  image,
-})) as CourseSeed[];
+const courseSeeds: CourseSeed[] = [];
 
 export const courses: Course[] = courseSeeds.map((seed, index) => {
   const price = 690 + (index % 5) * 210;

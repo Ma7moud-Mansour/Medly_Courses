@@ -137,8 +137,9 @@ async function main() {
   await prisma.instructor.updateMany({
     where: {
       OR: [
-        { name: { contains: "يوسف عبد الرحمن" } },
-        { name: { contains: "يوسف زياده" } },
+        { slug: "dr-youssef-ziadeh" },
+        { name: { contains: "\u064A\u0648\u0633\u0641 \u0639\u0628\u062F \u0627\u0644\u0631\u062D\u0645\u0646" } },
+        { name: { contains: "\u064A\u0648\u0633\u0641 \u0632\u064A\u0627\u062F\u0647" } },
       ],
     },
     data: {

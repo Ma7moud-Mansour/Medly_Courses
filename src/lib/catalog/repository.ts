@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { resolveInstructorAvatar } from "@/lib/instructors/avatar";
 import { clamp } from "@/lib/utils";
+import { DEMO_COURSE_SLUGS } from "@/lib/course/demo-cleanup";
 import { discoverPublicCourses, type CourseDiscoveryQuery, type CourseDiscoveryResult } from "@/lib/course/repository";
 import type { Category, Instructor, UserRole } from "@/types";
 
@@ -88,6 +89,9 @@ async function getPublishedCourseCountsByCategory(categoryIds: string[]) {
     by: ["categoryId"],
     where: {
       isPublished: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
       categoryId: {
         in: categoryIds,
       },
@@ -108,6 +112,9 @@ async function buildInstructorMetrics(instructorIds: string[]) {
   const courses = await prisma.course.findMany({
     where: {
       isPublished: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
       instructorId: {
         in: instructorIds,
       },
@@ -327,6 +334,9 @@ export async function listPublicInstructors(input: InstructorListingQuery = {}):
       courses: {
         some: {
           isPublished: true,
+          slug: {
+            notIn: DEMO_COURSE_SLUGS,
+          },
         },
       },
       ...(query

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { DEMO_COURSE_SLUGS, isDemoCourseSlug } from "@/lib/course/demo-cleanup";
 import { resolveInstructorAvatar } from "@/lib/instructors/avatar";
 import { resolveStoredAssetUrl } from "@/lib/storage";
 import { clamp } from "@/lib/utils";
@@ -547,6 +548,9 @@ async function getPublishedCourseFilterOptions() {
       by: ["categoryId"],
       where: {
         isPublished: true,
+        slug: {
+          notIn: DEMO_COURSE_SLUGS,
+        },
       },
       _count: {
         _all: true,
@@ -556,6 +560,9 @@ async function getPublishedCourseFilterOptions() {
       by: ["instructorId"],
       where: {
         isPublished: true,
+        slug: {
+          notIn: DEMO_COURSE_SLUGS,
+        },
       },
       _count: {
         _all: true,
@@ -633,6 +640,9 @@ export async function discoverPublicCourses(
 
   const where: Prisma.CourseWhereInput = {
     isPublished: true,
+    slug: {
+      notIn: DEMO_COURSE_SLUGS,
+    },
     ...(normalizedCategory
       ? {
           category: {
@@ -767,6 +777,9 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
             courses: {
               some: {
                 isPublished: true,
+                slug: {
+                  notIn: DEMO_COURSE_SLUGS,
+                },
               },
             },
             OR: [
@@ -784,6 +797,9 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
             courses: {
               some: {
                 isPublished: true,
+                slug: {
+                  notIn: DEMO_COURSE_SLUGS,
+                },
               },
             },
           },
@@ -798,6 +814,9 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
             courses: {
               some: {
                 isPublished: true,
+                slug: {
+                  notIn: DEMO_COURSE_SLUGS,
+                },
               },
             },
             OR: [
@@ -817,6 +836,9 @@ export async function searchPublicCourses(query: string): Promise<CourseSearchRe
             courses: {
               some: {
                 isPublished: true,
+                slug: {
+                  notIn: DEMO_COURSE_SLUGS,
+                },
               },
             },
           },
@@ -853,6 +875,9 @@ export async function listFeaturedCourses(viewer?: CourseViewerContext, limit = 
     where: {
       isPublished: true,
       featured: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
     },
     include: courseSummaryInclude,
     orderBy: [{ bestseller: "desc" }, { updatedAt: "desc" }],
@@ -891,6 +916,9 @@ export async function listRelatedCoursesByCourseId(courseId: string, viewer?: Co
         not: course.id,
       },
       isPublished: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
       OR: [
         { categoryId: course.categoryId },
         { instructorId: course.instructorId },
@@ -927,6 +955,9 @@ export async function getCourseCardList(courseIds: string[], viewer?: CourseView
           in: courseIds,
         },
         isPublished: true,
+        slug: {
+          notIn: DEMO_COURSE_SLUGS,
+        },
       },
       include: courseSummaryInclude,
     }),
@@ -942,6 +973,10 @@ export async function getCourseCardList(courseIds: string[], viewer?: CourseView
 // All student-facing course data comes from PostgreSQL through Prisma.
 // The viewer is optional so public pages can still render without trusting the client.
 export async function getCourseDetailsBySlug(slug: string, viewer?: CourseViewerContext): Promise<CourseDetailsView | undefined> {
+  if (isDemoCourseSlug(slug)) {
+    return undefined;
+  }
+
   const course = await prisma.course.findUnique({
     where: { slug },
     include: courseDetailsInclude,
@@ -993,6 +1028,9 @@ export async function getCourseDetailsBySlug(slug: string, viewer?: CourseViewer
         not: course.id,
       },
       isPublished: true,
+      slug: {
+        notIn: DEMO_COURSE_SLUGS,
+      },
       OR: [
         { categoryId: course.categoryId },
         { instructorId: course.instructorId },
@@ -1037,6 +1075,9 @@ export async function getCourseDetailsBySlug(slug: string, viewer?: CourseViewer
         where: {
           instructorId: course.instructor.id,
           isPublished: true,
+          slug: {
+            notIn: DEMO_COURSE_SLUGS,
+          },
         },
       }),
       studentsCount: instructorStudentsCount,
@@ -1058,6 +1099,9 @@ export async function listWishlistCourses(userId: string) {
       userId,
       course: {
         isPublished: true,
+        slug: {
+          notIn: DEMO_COURSE_SLUGS,
+        },
       },
     },
     include: {
@@ -1085,10 +1129,11 @@ export async function toggleWishlistCourse(userId: string, courseId: string) {
     select: {
       id: true,
       isPublished: true,
+      slug: true,
     },
   });
 
-  if (!course || !course.isPublished) {
+  if (!course || !course.isPublished || isDemoCourseSlug(course.slug)) {
     return {
       ok: false as const,
       reason: "not_found" as const,
@@ -1158,6 +1203,7 @@ export async function createCourseReview(
       select: {
         id: true,
         isPublished: true,
+        slug: true,
       },
     }),
     prisma.enrollment.findUnique({
@@ -1180,7 +1226,7 @@ export async function createCourseReview(
     }),
   ]);
 
-  if (!course || !course.isPublished) {
+  if (!course || !course.isPublished || isDemoCourseSlug(course.slug)) {
     return {
       ok: false as const,
       reason: "not_found" as const,

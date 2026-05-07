@@ -344,10 +344,12 @@ export async function createCourseLessonAction(formData: FormData) {
   let destination = editPath;
 
   try {
+    const lessonTitle = String(formData.get("title") ?? "");
+
     const parsed = adminLessonSchema.parse({
       chapterId,
-      title: formData.get("title"),
-      slug: formData.get("slug"),
+      title: lessonTitle,
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), lessonTitle),
       order: formData.get("order"),
       lessonType: formData.get("lessonType"),
       summary: formData.get("summary"),
@@ -409,11 +411,13 @@ export async function updateCourseLessonAction(formData: FormData) {
   let destination = editPath;
 
   try {
+    const lessonTitle = String(formData.get("title") ?? "");
+
     const parsed = adminLessonSchema.parse({
       lessonId,
       chapterId,
-      title: formData.get("title"),
-      slug: formData.get("slug"),
+      title: lessonTitle,
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), lessonTitle),
       order: formData.get("order"),
       lessonType: formData.get("lessonType"),
       summary: formData.get("summary"),

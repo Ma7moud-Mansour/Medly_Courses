@@ -1,27 +1,26 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { CoursePlayer } from "@/components/course/course-player";
 import { LessonSidebar } from "@/components/course/lesson-sidebar";
-import { requireServerSession } from "@/lib/auth/server-session";
-import { getLearningCourseBySlug } from "@/lib/student/repository";
+import { getServerSessionUser } from "@/lib/auth/server-session";
+import { getAuthorizedLessonContent } from "@/lib/content/repository";
 
 type Params = Promise<{ courseSlug: string; lessonSlug: string }>;
 
 export default async function LearnLessonPage({ params }: { params: Params }) {
-  const session = await requireServerSession();
   const { courseSlug, lessonSlug } = await params;
-  const learningCourse = await getLearningCourseBySlug(session.userId, courseSlug);
+  const session = await getServerSessionUser();
+
+  if (!session.isAuthenticated || !session.userId) {
+    redirect(`/login?redirect=${encodeURIComponent(`/learn/${courseSlug}/${lessonSlug}`)}`);
+  }
+
+  const learningCourse = await getAuthorizedLessonContent(session.userId, courseSlug, lessonSlug);
 
   if (!learningCourse) {
-    notFound();
+    redirect(`/courses/${encodeURIComponent(courseSlug)}`);
   }
 
-  const lesson = learningCourse.curriculum
-    .flatMap((chapter) => chapter.lessons)
-    .find((item) => item.slug === lessonSlug);
-
-  if (!lesson) {
-    notFound();
-  }
+  const lesson = learningCourse.currentLesson;
 
   const completedLessonIds = Object.entries(learningCourse.lessonProgress)
     .filter(([, progress]) => progress.completed)

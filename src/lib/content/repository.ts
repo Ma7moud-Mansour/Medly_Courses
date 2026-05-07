@@ -187,6 +187,55 @@ export type LearningCourseView = {
   watermark: VideoWatermark;
 };
 
+function normalizeRouteSlug(slug: string) {
+  const trimmed = slug.trim();
+
+  try {
+    return decodeURIComponent(trimmed).trim();
+  } catch {
+    return trimmed;
+  }
+}
+
+function getGeneratedSlugSuffix(slug: string) {
+  const suffix = slug.split("-").pop()?.trim();
+
+  return suffix && /^[a-z0-9]{6,}$/i.test(suffix) ? suffix : undefined;
+}
+
+function buildRouteSlugWhere(slug: string): Prisma.CourseWhereInput {
+  const normalizedSlug = normalizeRouteSlug(slug);
+  const generatedSuffix = getGeneratedSlugSuffix(normalizedSlug);
+
+  return {
+    isPublished: true,
+    OR: [
+      {
+        slug: normalizedSlug,
+      },
+      ...(generatedSuffix
+        ? [
+            {
+              slug: {
+                endsWith: `-${generatedSuffix}`,
+              },
+            },
+          ]
+        : []),
+    ],
+  };
+}
+
+function findLessonByRouteSlug(lessons: Lesson[], slug: string) {
+  const normalizedSlug = normalizeRouteSlug(slug);
+  const generatedSuffix = getGeneratedSlugSuffix(normalizedSlug);
+
+  return (
+    lessons.find((lesson) => lesson.slug === normalizedSlug) ??
+    (generatedSuffix ? lessons.find((lesson) => lesson.slug.endsWith(`-${generatedSuffix}`)) : undefined)
+  );
+}
+
 function toIso(value?: Date | null) {
   return value ? value.toISOString() : undefined;
 }
@@ -1368,8 +1417,7 @@ export async function getAuthorizedLearningCourse(userId: string, courseSlug: st
       userId,
       accessStatus: "active",
       course: {
-        slug: courseSlug,
-        isPublished: true,
+        is: buildRouteSlugWhere(courseSlug),
       },
       user: {
         status: "active",
@@ -1500,7 +1548,10 @@ export async function getAuthorizedLessonContent(userId: string, courseSlug: str
     return undefined;
   }
 
-  const lesson = course.curriculum.flatMap((chapter) => chapter.lessons).find((item) => item.slug === lessonSlug);
+  const lesson = findLessonByRouteSlug(
+    course.curriculum.flatMap((chapter) => chapter.lessons),
+    lessonSlug,
+  );
 
   if (!lesson || !lesson.isAccessible) {
     return undefined;

@@ -194,6 +194,22 @@ export type CourseSearchResultGroup = {
   instructors: Instructor[];
 };
 
+function normalizeSlugInput(slug: string) {
+  const trimmed = slug.trim();
+
+  try {
+    return decodeURIComponent(trimmed).trim();
+  } catch {
+    return trimmed;
+  }
+}
+
+function getGeneratedSlugSuffix(slug: string) {
+  const suffix = slug.split("-").pop()?.trim();
+
+  return suffix && /^[a-z0-9]{6,}$/i.test(suffix) ? suffix : undefined;
+}
+
 function formatUpdatedAt(value?: Date | null) {
   const date = value ?? new Date();
 
@@ -928,14 +944,32 @@ export async function getCourseCardList(courseIds: string[], viewer?: CourseView
 // All student-facing course data comes from PostgreSQL through Prisma.
 // The viewer is optional so public pages can still render without trusting the client.
 export async function getCourseDetailsBySlug(slug: string, viewer?: CourseViewerContext): Promise<CourseDetailsView | undefined> {
-  if (isDemoCourseSlug(slug)) {
+  const normalizedSlug = normalizeSlugInput(slug);
+
+  if (isDemoCourseSlug(normalizedSlug)) {
     return undefined;
   }
 
-  const course = await prisma.course.findUnique({
-    where: { slug },
+  const directCourse = await prisma.course.findUnique({
+    where: { slug: normalizedSlug },
     include: courseDetailsInclude,
   });
+  const generatedSuffix = directCourse ? undefined : getGeneratedSlugSuffix(normalizedSlug);
+  const course =
+    directCourse ??
+    (generatedSuffix
+      ? await prisma.course.findFirst({
+          where: {
+            slug: {
+              endsWith: `-${generatedSuffix}`,
+            },
+          },
+          include: courseDetailsInclude,
+          orderBy: {
+            updatedAt: "desc",
+          },
+        })
+      : null);
 
   if (!course) {
     return undefined;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, Landmark, PlayCircle } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { BuyNowButton } from "@/components/cart/buy-now-button";
 import { WishlistButton } from "@/components/course/wishlist-button";
 import { buttonVariants } from "@/components/ui/button";
 import { formatCurrency, getDiscountPercent } from "@/lib/utils";
@@ -105,9 +106,7 @@ export function PurchaseCard({ course }: { course: PurchaseCourse }) {
             ) : (
               <>
                 <AddToCartButton course={course} label="أضف للسلة" className="w-full" />
-                <Link className={buttonVariants({ variant: "secondary", className: "w-full" })} href="/checkout">
-                  اشتري الآن
-                </Link>
+                <BuyNowButton className="w-full" course={course} />
               </>
             )}
             <WishlistButton

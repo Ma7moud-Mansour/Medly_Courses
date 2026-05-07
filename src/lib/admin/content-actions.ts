@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { buildFeedbackPath, getActionErrorMessage } from "@/lib/actions/server-action-feedback";
 import { requireServerRole } from "@/lib/auth/server-session";
+import { prisma } from "@/lib/db";
 import {
   createAdminCourse,
   createAdminCategory,
@@ -52,6 +53,18 @@ function getOptionalText(value: FormDataEntryValue | null) {
   return normalized || undefined;
 }
 
+function getFirstSubmittedText(formData: FormData, key: string) {
+  for (const value of formData.getAll(key)) {
+    const normalized = String(value ?? "").trim();
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return "";
+}
+
 function getOptionalNumber(value: FormDataEntryValue | null) {
   const normalized = String(value ?? "").trim();
   if (!normalized) {
@@ -73,6 +86,35 @@ function buildCourseSlug(slug: string | undefined, title: string) {
 // so admin content mutations stay predictable and secure.
 async function requireContentAdmin() {
   return requireServerRole([...CONTENT_ADMIN_ROLES]);
+}
+
+function revalidatePublicContentPaths(courseSlug?: string) {
+  revalidatePath("/");
+  revalidatePath("/courses");
+  revalidatePath("/categories");
+  revalidatePath("/instructors");
+
+  if (courseSlug) {
+    revalidatePath(`/courses/${courseSlug}`);
+  }
+}
+
+async function revalidateCourseEditorPaths(courseId: string, editPath: string) {
+  revalidatePath("/admin/courses");
+  revalidatePath(editPath);
+
+  const course = courseId
+    ? await prisma.course.findUnique({
+        where: {
+          id: courseId,
+        },
+        select: {
+          slug: true,
+        },
+      })
+    : null;
+
+  revalidatePublicContentPaths(course?.slug);
 }
 
 export async function createAdminCourseAction(formData: FormData) {
@@ -223,8 +265,7 @@ export async function createCourseSectionAction(formData: FormData) {
       isPublished: parsed.isPublished,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "section-created" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -260,8 +301,7 @@ export async function updateCourseSectionAction(formData: FormData) {
       isPublished: parsed.isPublished,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "section-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -285,12 +325,7 @@ export async function deleteCourseSectionAction(formData: FormData) {
       sectionId,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
-    revalidatePath("/");
-    revalidatePath("/courses");
-    revalidatePath("/categories");
-    revalidatePath("/instructors");
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "section-deleted" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -344,7 +379,7 @@ export async function createCourseLessonAction(formData: FormData) {
   let destination = editPath;
 
   try {
-    const lessonTitle = String(formData.get("title") ?? "");
+    const lessonTitle = getFirstSubmittedText(formData, "title");
 
     const parsed = adminLessonSchema.parse({
       chapterId,
@@ -390,8 +425,7 @@ export async function createCourseLessonAction(formData: FormData) {
         : undefined,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "lesson-created" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -411,7 +445,7 @@ export async function updateCourseLessonAction(formData: FormData) {
   let destination = editPath;
 
   try {
-    const lessonTitle = String(formData.get("title") ?? "");
+    const lessonTitle = getFirstSubmittedText(formData, "title");
 
     const parsed = adminLessonSchema.parse({
       lessonId,
@@ -458,8 +492,7 @@ export async function updateCourseLessonAction(formData: FormData) {
         : undefined,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "lesson-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -483,12 +516,7 @@ export async function deleteCourseLessonAction(formData: FormData) {
       lessonId,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
-    revalidatePath("/");
-    revalidatePath("/courses");
-    revalidatePath("/categories");
-    revalidatePath("/instructors");
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "lesson-deleted" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -538,8 +566,7 @@ export async function createLessonAttachmentAction(formData: FormData) {
       visibilityStatus: parsed.visibilityStatus,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "attachment-created" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -591,8 +618,7 @@ export async function updateLessonAttachmentAction(formData: FormData) {
       visibilityStatus: parsed.visibilityStatus,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "attachment-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -616,8 +642,7 @@ export async function deleteLessonAttachmentAction(formData: FormData) {
       attachmentId,
     });
 
-    revalidatePath("/admin/courses");
-    revalidatePath(editPath);
+    await revalidateCourseEditorPaths(courseId, editPath);
     destination = buildFeedbackPath(editPath, { flash: "attachment-deleted" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
@@ -768,7 +793,7 @@ export async function createAdminCategoryAction(formData: FormData) {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("name") ?? "")),
       description: formData.get("description"),
       descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),
@@ -808,7 +833,7 @@ export async function updateAdminCategoryAction(formData: FormData) {
     const parsed = adminCategorySchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("title") ?? "")),
+      slug: buildCourseSlug(getOptionalText(formData.get("slug")), String(formData.get("name") ?? "")),
       description: formData.get("description"),
       descriptionEn: formData.get("descriptionEn"),
       icon: formData.get("icon"),

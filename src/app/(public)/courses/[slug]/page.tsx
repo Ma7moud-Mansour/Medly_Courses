@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { CurriculumAccordion } from "@/components/course/curriculum-accordion";
 import { CourseHero } from "@/components/course/course-hero";
 import { InstructorBox } from "@/components/course/instructor-box";
@@ -12,6 +13,16 @@ import { getServerSessionUser } from "@/lib/auth/server-session";
 import { getCourseDetailsBySlug } from "@/lib/course/repository";
 
 type Params = Promise<{ slug: string }>;
+
+export const dynamic = "force-dynamic";
+
+function normalizeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug).trim();
+  } catch {
+    return slug.trim();
+  }
+}
 
 async function getViewerContext() {
   const session = await getServerSessionUser();
@@ -28,7 +39,8 @@ async function getViewerContext() {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: routeSlug } = await params;
+  const slug = normalizeRouteSlug(routeSlug);
   const details = await getCourseDetailsBySlug(slug, { isAuthenticated: false });
 
   return {
@@ -38,9 +50,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 export default async function CourseDetailsPage({ params }: { params: Params }) {
-  const { slug } = await params;
+  await connection();
+
+  const { slug: routeSlug } = await params;
+  const slug = normalizeRouteSlug(routeSlug);
   const viewer = await getViewerContext();
-  const details = await getCourseDetailsBySlug(slug, viewer);
+  const details =
+    (await getCourseDetailsBySlug(slug, viewer)) ??
+    (await getCourseDetailsBySlug(slug, { isAuthenticated: false }));
 
   if (!details) {
     notFound();

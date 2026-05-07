@@ -39,6 +39,7 @@ import {
   adminLessonSchema,
   adminSectionSchema,
 } from "@/lib/validators/schemas";
+import { slugifyArabic } from "@/lib/utils";
 
 const CONTENT_ADMIN_ROLES = ["admin"] as const;
 
@@ -61,6 +62,13 @@ function getOptionalNumber(value: FormDataEntryValue | null) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function buildCourseSlug(slug: string | undefined, title: string) {
+  const manualSlug = slug?.trim();
+  const base = slugifyArabic(manualSlug || title) || "course";
+
+  return manualSlug ? base : `${base}-${Date.now().toString(36)}`;
+}
+
 // Keep validation, role checks, and cache revalidation at the server boundary
 // so admin content mutations stay predictable and secure.
 async function requireContentAdmin() {
@@ -75,7 +83,7 @@ export async function createAdminCourseAction(formData: FormData) {
     const parsed = adminCourseSchema.parse({
       title: formData.get("title"),
       slug: formData.get("slug"),
-      subtitle: formData.get("subtitle"),
+      subtitle: formData.get("subtitle") ?? "",
       description: formData.get("description"),
       thumbnail: formData.get("thumbnail"),
       price: formData.get("price"),
@@ -89,11 +97,12 @@ export async function createAdminCourseAction(formData: FormData) {
       bestseller: getCheckedValue(formData.get("bestseller")),
       examPrep: getCheckedValue(formData.get("examPrep")),
     });
+    const courseSlug = buildCourseSlug(parsed.slug, parsed.title);
 
     const course = await createAdminCourse({
       adminId: actor.userId,
       title: parsed.title,
-      slug: parsed.slug,
+      slug: courseSlug,
       subtitle: parsed.subtitle || undefined,
       description: parsed.description,
       thumbnail: parsed.thumbnail,
@@ -112,6 +121,7 @@ export async function createAdminCourseAction(formData: FormData) {
     revalidatePath("/admin/courses");
     revalidatePath("/");
     revalidatePath("/courses");
+    revalidatePath(`/courses/${courseSlug}`);
     revalidatePath("/categories");
     revalidatePath("/instructors");
     destination = buildFeedbackPath(`/admin/courses/${course.id}/edit`, {
@@ -136,7 +146,7 @@ export async function updateAdminCourseAction(formData: FormData) {
     const parsed = adminCourseSchema.parse({
       title: formData.get("title"),
       slug: formData.get("slug"),
-      subtitle: formData.get("subtitle"),
+      subtitle: formData.get("subtitle") ?? "",
       description: formData.get("description"),
       thumbnail: formData.get("thumbnail"),
       price: formData.get("price"),
@@ -150,12 +160,13 @@ export async function updateAdminCourseAction(formData: FormData) {
       bestseller: getCheckedValue(formData.get("bestseller")),
       examPrep: getCheckedValue(formData.get("examPrep")),
     });
+    const courseSlug = buildCourseSlug(parsed.slug, parsed.title);
 
     await updateAdminCourse({
       adminId: actor.userId,
       courseId,
       title: parsed.title,
-      slug: parsed.slug,
+      slug: courseSlug,
       subtitle: parsed.subtitle || undefined,
       description: parsed.description,
       thumbnail: parsed.thumbnail,
@@ -175,7 +186,7 @@ export async function updateAdminCourseAction(formData: FormData) {
     revalidatePath(editPath);
     revalidatePath("/");
     revalidatePath("/courses");
-    revalidatePath(`/courses/${parsed.slug}`);
+    revalidatePath(`/courses/${courseSlug}`);
     revalidatePath("/categories");
     revalidatePath("/instructors");
     destination = buildFeedbackPath(editPath, { flash: "course-updated" });

@@ -125,9 +125,9 @@ export const adminCouponSchema = z
   });
 
 export const adminCourseSchema = z.object({
-  title: z.string().min(4, "Course title is required"),
+  title: z.string().trim().min(2, "Course title is required"),
   titleEn: z.string().max(240).optional().or(z.literal("")),
-  slug: z.string().min(3, "Slug is required"),
+  slug: z.string().trim().max(160).optional().or(z.literal("")),
   subtitle: z.string().max(180).optional().or(z.literal("")),
   subtitleEn: z.string().max(180).optional().or(z.literal("")),
   description: z.string().trim().min(1, "Course description is required"),

@@ -47,12 +47,15 @@ export default async function EditCoursePage({
             <p className="text-xs font-black uppercase tracking-[0.18em] text-primary">مساحة عمل الكورس</p>
             <h1 className="mt-2 text-3xl font-black">{data.course.title}</h1>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-              من هنا تدير بيانات الكورس والسعر والدكتور وحالة النشر والمحتوى الرئيسي والوسائط والموارد والامتحانات المرتبطة.
+              من هنا تعدّل البيانات الأساسية وتضيف الأقسام والدروس والفيديوهات. استخدم زر المعاينة لفتح صفحة الطالب مباشرة.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DeleteCourseButton courseId={data.course.id} courseTitle={data.course.title} />
             <StatusBadge label={data.course.isPublished ? "منشور" : "مخفي"} tone={data.course.isPublished ? "active" : "closed"} />
+            <Link className={buttonVariants({ variant: "outline" })} href={`/courses/${data.course.slug}`}>
+              معاينة صفحة الطالب
+            </Link>
             <Link className={buttonVariants({ variant: "outline" })} href="/admin/courses">
               العودة إلى الكورسات
             </Link>

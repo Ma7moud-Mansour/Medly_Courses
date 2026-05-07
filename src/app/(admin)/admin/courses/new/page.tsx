@@ -22,8 +22,7 @@ export default async function NewCoursePage({ searchParams }: { searchParams: Se
           <p className="text-xs font-black uppercase tracking-[0.18em] text-primary">كورس جديد</p>
           <h1 className="mt-2 text-3xl font-black">إنشاء كورس</h1>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-            ابدأ ببيانات الكورس الأساسية. بعد الحفظ سيتم نقلك مباشرة إلى مساحة المحتوى الرئيسية لإضافة الأقسام والدروس
-            والفيديوهات والمرفقات والامتحانات المرتبطة.
+            املأ البيانات الأساسية فقط: العنوان، الوصف، الصورة، التصنيف، الدكتور، والسعر. بعد الحفظ ستنتقل إلى صفحة المحتوى لإضافة الدروس والفيديوهات.
           </p>
         </div>
         <Link className={buttonVariants({ variant: "outline" })} href="/admin/courses">
@@ -31,17 +30,8 @@ export default async function NewCoursePage({ searchParams }: { searchParams: Se
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          ["المحتوى الرئيسي", "ستضيف الأقسام والدروس وترتيب المنهج مباشرة بعد إنشاء الكورس."],
-          ["الفيديوهات والملفات", "رفع الفيديو والمرفقات يتم من محرر المحتوى نفسه وليس من صفحة خارجية."],
-          ["الامتحانات المرتبطة", "يمكنك ربط امتحان بالكورس من مساحة العمل بعد الحفظ."],
-        ].map(([title, body]) => (
-          <article key={title} className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-            <h2 className="text-base font-black">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
-          </article>
-        ))}
+      <div className="rounded-xl border border-border bg-[#f5fbf9] p-4 text-sm font-bold leading-7 text-[#0e5f5c]">
+        الكورس الجديد سيكون ظاهرًا للطلبة بعد الحفظ افتراضيًا. يمكنك إخفاؤه من خيار الظهور داخل الفورم.
       </div>
 
       {error ? <ActionFeedbackBanner kind="error" message={error} /> : null}

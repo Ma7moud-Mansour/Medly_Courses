@@ -1,4 +1,5 @@
 import { MediaUploadField } from "@/components/admin/media-upload-field";
+import { UploadSubmitGuard } from "@/components/admin/upload-submit-guard";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { createAdminCourseAction, updateAdminCourseAction } from "@/lib/admin/content-actions";
 import type { AdminCourseEditorData, AdminCourseOption } from "@/lib/content/repository";
@@ -65,6 +66,7 @@ export function CourseMetadataForm({
 
   return (
     <form action={action} className="grid gap-5">
+      <UploadSubmitGuard />
       {mode === "edit" ? <input name="courseId" type="hidden" value={course?.id} /> : null}
       <input name="slug" type="hidden" value={course?.slug ?? ""} />
       <input name="level" type="hidden" value={course?.level ?? "beginner"} />
@@ -108,6 +110,7 @@ export function CourseMetadataForm({
             fieldNames={{ url: "thumbnail" }}
             hint="يفضّل صورة طبية نظيفة مع مساحة مناسبة للنصوص والكروت."
             kind="thumbnail"
+            required
             label="صورة الغلاف"
           />
         </div>

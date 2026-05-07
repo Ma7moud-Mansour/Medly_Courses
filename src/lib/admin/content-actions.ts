@@ -129,7 +129,7 @@ export async function createAdminCourseAction(formData: FormData) {
     });
   } catch (error) {
     destination = buildFeedbackPath("/admin/courses/new", {
-      error: getActionErrorMessage(error, "Unable to create the course right now."),
+      error: getActionErrorMessage(error, "تعذر إنشاء الكورس الآن."),
     });
   }
 
@@ -192,7 +192,7 @@ export async function updateAdminCourseAction(formData: FormData) {
     destination = buildFeedbackPath(editPath, { flash: "course-updated" });
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
-      error: getActionErrorMessage(error, "Unable to save the course changes."),
+      error: getActionErrorMessage(error, "تعذر حفظ تعديلات الكورس."),
     });
   }
 

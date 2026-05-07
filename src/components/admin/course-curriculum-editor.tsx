@@ -1,4 +1,5 @@
 import { MediaUploadField } from "@/components/admin/media-upload-field";
+import { UploadSubmitGuard } from "@/components/admin/upload-submit-guard";
 import {
   createCourseLessonAction,
   createCourseSectionAction,
@@ -65,6 +66,7 @@ function AttachmentEditor({
       </div>
 
       <form action={updateLessonAttachmentAction} className="grid gap-4">
+        <UploadSubmitGuard />
         <input name="courseId" type="hidden" value={courseId} />
         <input name="lessonId" type="hidden" value={lessonId} />
         <input name="attachmentId" type="hidden" value={attachment.id} />
@@ -109,6 +111,7 @@ function AttachmentEditor({
           }}
           hint="يمكنك استبدال الملف الحالي مباشرة. يتم تنظيف الملف القديم بعد الحفظ."
           kind={attachment.mimeType === "application/pdf" ? "pdf" : "attachment"}
+          required
           label="ملف المرفق"
         />
 
@@ -134,6 +137,7 @@ function NewAttachmentForm({
 }) {
   return (
     <form action={createLessonAttachmentAction} className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4">
+      <UploadSubmitGuard />
       <input name="courseId" type="hidden" value={courseId} />
       <input name="lessonId" type="hidden" value={lesson.id} />
 
@@ -180,6 +184,7 @@ function NewAttachmentForm({
         }}
         hint="الملف نفسه يُرفع إلى التخزين المحلي أثناء التطوير، وقاعدة البيانات تحفظ البيانات الوصفية فقط."
         kind="attachment"
+        required
         label="رفع المرفق"
       />
 
@@ -223,6 +228,7 @@ function LessonEditor({
 
       <div className="grid gap-4 border-t border-border px-4 py-4">
         <form action={updateCourseLessonAction} className="grid gap-4 rounded-lg border border-border bg-white p-4">
+          <UploadSubmitGuard />
           <input name="courseId" type="hidden" value={courseId} />
           <input name="chapterId" type="hidden" value={section.id} />
           <input name="lessonId" type="hidden" value={lesson.id} />
@@ -421,6 +427,7 @@ function NewLessonForm({
 }) {
   return (
     <form action={createCourseLessonAction} className="grid gap-4 rounded-lg border border-dashed border-border bg-[#fbfcfc] p-4">
+      <UploadSubmitGuard />
       <input name="courseId" type="hidden" value={courseId} />
       <input name="chapterId" type="hidden" value={section.id} />
 

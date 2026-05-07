@@ -37,7 +37,7 @@ const KIND_ICONS = {
 } as const;
 
 function formatBytes(bytes?: number) {
-  if (!bytes) return "Unknown size";
+  if (!bytes) return "حجم غير معروف";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -52,6 +52,7 @@ export function MediaUploadField({
   current,
   fieldNames,
   className,
+  required,
 }: {
   kind: AdminUploadKind;
   label: string;
@@ -61,6 +62,7 @@ export function MediaUploadField({
   current?: UploadValue;
   fieldNames: UploadFieldNames;
   className?: string;
+  required?: boolean;
 }) {
   const resolvedHint = hint ?? helper;
   const [asset, setAsset] = useState<UploadValue>({
@@ -102,11 +104,11 @@ export function MediaUploadField({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error || `Upload failed with status ${response.status}.`);
+          throw new Error(payload?.error || `فشل رفع الملف. كود الخطأ: ${response.status}`);
         }
 
         if (!payload?.data) {
-          throw new Error("Upload finished without file metadata.");
+          throw new Error("تم الرفع لكن لم تصل بيانات الملف.");
         }
 
         setAsset({
@@ -120,7 +122,7 @@ export function MediaUploadField({
           thumbnailUrl: payload.data.thumbnailUrl,
         });
       } catch (uploadError) {
-        setError(uploadError instanceof Error ? uploadError.message : "Upload failed.");
+        setError(uploadError instanceof Error ? uploadError.message : "فشل رفع الملف.");
       } finally {
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -159,15 +161,20 @@ export function MediaUploadField({
               type="button"
             >
               <Trash2 className="h-4 w-4" />
-              Remove
+              حذف
             </button>
           ) : null}
         </div>
 
-        {asset.url ? (
-          <div className="rounded-lg border border-border bg-[#fbfcfc] p-3 text-sm">
+        <div
+          data-upload-has-file={asset.url ? "true" : "false"}
+          data-upload-required={required ? "true" : "false"}
+          data-upload-state={isPending ? "pending" : "idle"}
+        >
+          {asset.url ? (
+            <div className="rounded-lg border border-border bg-[#fbfcfc] p-3 text-sm">
             <div className="grid gap-1">
-              <p className="font-bold">{asset.fileName || "Uploaded asset"}</p>
+              <p className="font-bold">{asset.fileName || "الملف المرفوع"}</p>
               <p className="text-xs text-muted-foreground">
                 {(asset.provider || "local").toUpperCase()} • {asset.mimeType || "Unknown type"} •{" "}
                 {formatBytes(asset.fileSizeBytes)}
@@ -179,18 +186,19 @@ export function MediaUploadField({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Preview current file
+                  معاينة الملف
                 </a>
               ) : (
-                <span className="text-xs font-bold text-muted-foreground">Stored in protected media storage</span>
+                <span className="text-xs font-bold text-muted-foreground">محفوظ في تخزين محمي</span>
               )}
             </div>
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3 text-sm font-bold text-muted-foreground">
-            No file uploaded for this field yet.
+            لم يتم رفع ملف هنا حتى الآن.
           </div>
-        )}
+          )}
+        </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <input
@@ -209,12 +217,15 @@ export function MediaUploadField({
 
           <Button onClick={() => fileInputRef.current?.click()} type="button" variant="outline">
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {asset.url ? "Replace file" : "Upload file"}
+            {isPending ? "جاري الرفع..." : asset.url ? "تغيير الملف" : "رفع ملف"}
           </Button>
 
           {asset.fileName ? <span className="text-xs font-bold text-muted-foreground">{asset.fileName}</span> : null}
         </div>
 
+        {required && !asset.url && !isPending ? (
+          <p className="text-xs font-bold text-danger">هذا الملف مطلوب قبل الحفظ.</p>
+        ) : null}
         {error ? <p className="text-xs font-bold text-danger">{error}</p> : null}
 
         {kind === "video" ? (

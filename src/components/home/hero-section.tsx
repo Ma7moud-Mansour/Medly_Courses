@@ -121,7 +121,7 @@ export function HeroSection() {
 
         <div
           className={cn(
-            "hero-preview order-2 relative mx-auto h-[280px] w-full max-w-[430px] sm:h-[380px] lg:h-[460px] lg:max-w-[500px]",
+            "hero-preview order-2 relative mx-auto hidden h-[280px] w-full max-w-[430px] sm:block sm:h-[380px] lg:h-[460px] lg:max-w-[500px]",
             language === "ar" ? "lg:order-1" : "lg:order-2",
           )}
         >

@@ -3,6 +3,7 @@ import { BookOpen, ClipboardList, History, ShieldCheck } from "lucide-react";
 import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { requireServerRole } from "@/lib/auth/server-session";
 import {
   getCourseOptions,
   getStudentById,
@@ -115,6 +116,7 @@ export default async function AdminStudentDetailsPage({
   const query = await searchParams;
   const flash = first(query.flash);
   const error = first(query.error);
+  const actor = await requireServerRole(["admin", "support"]);
   const [details, courseOptions] = await Promise.all([getStudentById(id), getCourseOptions()]);
 
   if (!details) {
@@ -406,18 +408,26 @@ export default async function AdminStudentDetailsPage({
               label="إعادة ضبط التقدم"
               studentId={details.user.id}
             />
-            <ActionButton
-              helper="يفتح وضع معاينة إداري لحساب الطالب لمراجعة ما يظهر له."
-              intent="start-impersonation"
-              label="معاينة حساب الطالب"
-              studentId={details.user.id}
-            />
-            <ActionButton
-              helper="يقفل وضع المعاينة الإداري لهذا الطالب."
-              intent="end-impersonation"
-              label="إنهاء المعاينة"
-              studentId={details.user.id}
-            />
+            {actor.role === "admin" ? (
+              <>
+                <ActionButton
+                  helper="يفتح وضع معاينة إداري لحساب الطالب لمراجعة ما يظهر له."
+                  intent="start-impersonation"
+                  label="معاينة حساب الطالب"
+                  studentId={details.user.id}
+                />
+                <ActionButton
+                  helper="يقفل وضع المعاينة الإداري لهذا الطالب."
+                  intent="end-impersonation"
+                  label="إنهاء المعاينة"
+                  studentId={details.user.id}
+                />
+              </>
+            ) : (
+              <div className="rounded-lg border border-border bg-muted p-4 text-sm font-bold leading-6 text-muted-foreground sm:col-span-2">
+                معاينة حساب الطالب متاحة للمدير فقط. باقي إجراءات الدعم في هذه الصفحة تعمل بشكل طبيعي.
+              </div>
+            )}
           </div>
 
           <div className="mt-5 grid gap-3">

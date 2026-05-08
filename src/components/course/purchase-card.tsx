@@ -40,7 +40,7 @@ export function PurchaseCard({ course }: { course: PurchaseCourse }) {
   const accessMessage = getAccessMessage(course);
 
   return (
-    <aside className="xl:-mt-56 xl:sticky xl:top-20">
+    <aside className="w-full min-w-0 xl:-mt-56 xl:sticky xl:top-20">
       <div className="overflow-hidden rounded-lg border border-[#e8eeec] bg-white shadow-[0_22px_70px_rgba(15,23,42,0.09)]">
         <div className="relative aspect-video bg-[#f2f6f4]">
           <img className="h-full w-full object-cover" src={course.thumbnail} alt={course.title} />
@@ -59,7 +59,7 @@ export function PurchaseCard({ course }: { course: PurchaseCourse }) {
           ) : null}
         </div>
         <div className="p-5">
-          <div className="flex items-end justify-between gap-3">
+          <div className="grid gap-3 sm:flex sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-bold text-[#5f6f6c]">سعر الكورس</p>
               <p className="mt-1 text-3xl font-black text-[#0f172a]">
@@ -121,8 +121,8 @@ export function PurchaseCard({ course }: { course: PurchaseCourse }) {
           <ul className="mt-5 grid gap-3 text-sm text-[#5f6f6c]">
             {["وصول كامل للكورس", "موارد قابلة للتحميل", "حفظ آخر موضع", "يظهر في كورساتي بعد اعتماد الدفع"].map(
               (item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#0e5f5c]" />
+                <li key={item} className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0e5f5c]" />
                   {item}
                 </li>
               ),

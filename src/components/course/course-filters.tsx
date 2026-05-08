@@ -26,10 +26,10 @@ export function CourseFilters({
   return (
     <form
       action="/courses"
-      className="grid gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm lg:grid-cols-[1.8fr_repeat(5,1fr)_auto_auto]"
+      className="grid gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(220px,1.8fr)_repeat(5,minmax(0,1fr))_auto_auto]"
       method="GET"
     >
-      <label className="relative">
+      <label className="relative min-w-0 sm:col-span-2 xl:col-span-1">
         <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           className="min-h-11 w-full rounded-lg border border-border bg-white pr-10 pl-3 text-sm outline-none focus:border-primary"
@@ -97,10 +97,10 @@ function Select({
   ...props
 }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="sr-only">{label}</span>
       <select
-        className="min-h-11 w-full rounded-lg border border-border bg-white px-3 text-sm font-bold outline-none focus:border-primary"
+        className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-white px-3 text-sm font-bold outline-none focus:border-primary"
         {...props}
       />
     </label>

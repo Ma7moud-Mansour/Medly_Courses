@@ -30,7 +30,7 @@ export function CurriculumAccordion({ curriculum }: { curriculum: CurriculumChap
           className="rounded-lg border border-border bg-surface p-4"
           open={index === 0}
         >
-          <summary className="cursor-pointer text-lg font-black">
+          <summary className="cursor-pointer break-words text-base font-black sm:text-lg">
             {chapter.order}. {chapter.title}
           </summary>
           {chapter.description ? <p className="mt-2 text-sm leading-7 text-muted-foreground">{chapter.description}</p> : null}
@@ -38,13 +38,13 @@ export function CurriculumAccordion({ curriculum }: { curriculum: CurriculumChap
             {chapter.lessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-3 text-sm"
+                className="grid gap-3 rounded-lg bg-muted px-3 py-3 text-sm sm:flex sm:items-center sm:justify-between"
               >
-                <span className="flex items-center gap-2 font-bold">
+                <span className="flex min-w-0 items-start gap-2 font-bold sm:items-center">
                   {lessonIcon(lesson.lessonType, lesson.isPreview)}
-                  {lesson.title}
+                  <span className="min-w-0 break-words">{lesson.title}</span>
                 </span>
-                <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground sm:gap-3">
                   <span className="rounded-lg bg-white px-2 py-1 text-[11px] uppercase">{lesson.lessonType ?? "video"}</span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />

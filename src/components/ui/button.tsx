@@ -14,7 +14,7 @@ export function buttonVariants({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-lg font-bold transition duration-150 focus-ring disabled:pointer-events-none disabled:opacity-55",
+    "inline-flex max-w-full items-center justify-center gap-2 rounded-lg text-center font-bold transition duration-150 focus-ring disabled:pointer-events-none disabled:opacity-55",
     size === "sm" && "min-h-9 px-3 text-sm",
     size === "md" && "min-h-11 px-5 text-sm",
     size === "lg" && "min-h-12 px-6 text-base",

@@ -69,13 +69,13 @@ export function GlobalSearch({
     !results.courses.length && !results.categories.length && !results.instructors.length && !isLoading;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0f172a]/42 p-3 backdrop-blur-sm" role="dialog" aria-modal>
-      <div className="mx-auto mt-16 max-w-3xl rounded-lg border border-[#e8eeec] bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0f172a]/42 p-3 backdrop-blur-sm" role="dialog" aria-modal>
+      <div className="mx-auto mt-4 w-full max-w-3xl rounded-lg border border-[#e8eeec] bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)] sm:mt-16">
         <div className="flex items-center gap-3 border-b border-[#e8eeec] p-4">
           <Search className="h-5 w-5 text-[#0e5f5c]" />
           <input
             autoFocus
-            className="min-h-12 flex-1 bg-transparent text-lg font-bold text-[#0f172a] outline-none placeholder:text-[#7a8784]"
+            className="min-h-12 min-w-0 flex-1 bg-transparent text-base font-bold text-[#0f172a] outline-none placeholder:text-[#7a8784] sm:text-lg"
             placeholder="ابحث باسم الكورس أو الدكتور أو التصنيف"
             value={query}
             onChange={(event) => setQuery(event.target.value)}

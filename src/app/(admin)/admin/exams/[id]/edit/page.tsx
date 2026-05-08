@@ -72,8 +72,8 @@ export default async function EditAdminExamPage({
         </div>
 
         {data.attempts.length ? (
-          <div className="overflow-hidden rounded-xl border border-border">
-            <table className="w-full text-right text-sm">
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <table className="w-full min-w-[720px] text-right text-sm">
               <thead className="bg-muted/60 text-muted-foreground">
                 <tr>
                   <th className="p-4">الطالب</th>

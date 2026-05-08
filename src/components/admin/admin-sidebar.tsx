@@ -48,12 +48,12 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-l border-border bg-[#123c35] p-4 text-white lg:min-h-screen">
-      <Link className="mb-6 flex items-center gap-2 text-2xl font-black" href="/admin">
-        <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-white">M</span>
-        <span className="flex flex-col">
+    <aside className="border-l border-border bg-[#123c35] p-3 text-white xl:min-h-screen xl:p-4">
+      <Link className="mb-4 flex min-w-0 items-center gap-2 text-xl font-black xl:mb-6 xl:text-2xl" href="/admin">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-white">M</span>
+        <span className="flex min-w-0 flex-col">
           <span>Medly Admin</span>
-          <span className="text-xs font-bold text-white/65">إدارة الطلاب والمحتوى والمدفوعات</span>
+          <span className="line-clamp-2 text-xs font-bold text-white/65">إدارة الطلاب والمحتوى والمدفوعات</span>
         </span>
       </Link>
 
@@ -64,7 +64,7 @@ export function AdminSidebar() {
         </p>
       </div>
 
-      <nav className="grid gap-2">
+      <nav className="flex gap-2 overflow-x-auto pb-1 xl:grid xl:overflow-visible xl:pb-0">
         {links.map((link) => {
           const active = isActiveLink(pathname, link.href);
 
@@ -72,7 +72,7 @@ export function AdminSidebar() {
             <Link
               key={link.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition",
+                "flex shrink-0 items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition xl:shrink",
                 active
                   ? "bg-white text-[#123c35] shadow-sm"
                   : "text-white/78 hover:bg-white/10 hover:text-white",

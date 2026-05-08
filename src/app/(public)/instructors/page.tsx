@@ -17,25 +17,25 @@ export default async function InstructorsPage() {
   return (
     <>
       <PageHeader eyebrow="الدكاترة" title="الدكاترة" />
-      <Container className="grid gap-5 py-10 md:grid-cols-2 xl:grid-cols-3">
+      <Container className="grid gap-5 py-8 sm:grid-cols-2 lg:py-10 xl:grid-cols-3">
         {instructors.map((instructor) => (
           <Link
             key={instructor.id}
-            className="rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            className="min-w-0 rounded-lg border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-5"
             href={`/instructors/${instructor.slug}`}
           >
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <InstructorAvatar
                 avatar={instructor.avatar}
-                className="h-20 w-20"
+                className="h-16 w-16 shrink-0 sm:h-20 sm:w-20"
                 name={instructor.name}
                 slug={instructor.slug}
               />
-              <div>
-                <h2 className="text-2xl font-black">{instructor.name}</h2>
+              <div className="min-w-0">
+                <h2 className="break-words text-xl font-black sm:text-2xl">{instructor.name}</h2>
               </div>
             </div>
-            <div className="mt-5 flex gap-5 text-sm font-bold text-muted-foreground">
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-primary" />
                 {formatNumber(instructor.studentsCount ?? 0)}

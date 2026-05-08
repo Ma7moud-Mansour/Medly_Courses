@@ -34,18 +34,18 @@ function getAccessLabel(course: CourseHeroData) {
 export function CourseHero({ course }: { course: CourseHeroData }) {
   return (
     <section className="border-b border-[#e8eeec] bg-[#f8faf8]">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:px-8 xl:grid-cols-[1fr_420px] xl:py-18">
-        <div>
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:grid-cols-[minmax(0,1fr)_420px] xl:py-18">
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm font-black text-[#8a6a2f]">{course.categoryName ?? "كورس طبي"}</p>
             <span className="rounded-lg bg-white px-3 py-1.5 text-xs font-black text-primary shadow-sm">
               {getAccessLabel(course)}
             </span>
           </div>
-          <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[1.25] text-[#0f172a] sm:text-5xl">
+          <h1 className="mt-4 max-w-4xl break-words text-3xl font-black leading-[1.25] text-[#0f172a] sm:text-4xl lg:text-5xl">
             {course.title}
           </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-9 text-[#5f6f6c]">{course.description}</p>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-[#5f6f6c] sm:mt-5 sm:text-lg sm:leading-9">{course.description}</p>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-bold text-[#5f6f6c]">
             <span className="flex items-center gap-2">
@@ -62,8 +62,8 @@ export function CourseHero({ course }: { course: CourseHeroData }) {
             </span>
           </div>
 
-          <p className="mt-6 flex items-center gap-2 text-sm font-bold text-[#5f6f6c]">
-            <ShieldCheck className="h-5 w-5 text-[#0e5f5c]" />
+          <p className="mt-6 flex items-start gap-2 text-sm font-bold leading-7 text-[#5f6f6c] sm:items-center">
+            <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[#0e5f5c] sm:mt-0" />
             الدكتور: {course.instructorName ?? "هيئة التدريس"} · آخر تحديث {course.lastUpdated}
           </p>
         </div>

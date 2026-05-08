@@ -52,8 +52,21 @@ body {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 * {
   box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 ::selection {

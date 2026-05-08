@@ -48,8 +48,8 @@ export default async function AdminExamsPage() {
       </div>
 
       {exams.length ? (
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-          <table className="w-full text-right text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
+          <table className="w-full min-w-[760px] text-right text-sm">
             <thead className="bg-muted/60 text-muted-foreground">
               <tr>
                 <th className="p-4">الامتحان</th>

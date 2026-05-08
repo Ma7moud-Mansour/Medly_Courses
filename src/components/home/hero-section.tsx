@@ -108,7 +108,7 @@ export function HeroSection() {
         strokeWidth={1}
       />
 
-      <Container className="relative grid min-h-[560px] items-center gap-10 pt-20 pb-20 lg:grid-cols-[0.96fr_1.04fr] lg:pt-16 lg:pb-24">
+      <Container className="relative grid min-h-0 items-center gap-8 pt-20 pb-14 sm:pb-20 lg:min-h-[560px] lg:grid-cols-[0.96fr_1.04fr] lg:pt-16 lg:pb-24">
         <button
           className="absolute left-4 top-4 z-20 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#b8dcd4] bg-white/70 px-4 text-sm font-black text-[#0e5f5c] shadow-[0_10px_22px_rgba(14,95,92,0.06)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:bg-white sm:left-6 lg:left-8"
           onClick={toggleDarkMode}
@@ -121,7 +121,7 @@ export function HeroSection() {
 
         <div
           className={cn(
-            "hero-preview relative mx-auto h-[330px] w-full max-w-[430px] sm:h-[380px] lg:h-[460px] lg:max-w-[500px]",
+            "hero-preview order-2 relative mx-auto h-[280px] w-full max-w-[430px] sm:h-[380px] lg:h-[460px] lg:max-w-[500px]",
             language === "ar" ? "lg:order-1" : "lg:order-2",
           )}
         >
@@ -166,7 +166,7 @@ export function HeroSection() {
 
         <div
           className={cn(
-            "hero-copy mx-auto max-w-[590px] text-center lg:mx-0 lg:text-start",
+            "hero-copy order-1 mx-auto max-w-[590px] text-center lg:mx-0 lg:text-start",
             language === "ar" ? "lg:order-2" : "lg:order-1",
           )}
         >
@@ -175,7 +175,7 @@ export function HeroSection() {
             {text.eyebrow}
           </p>
 
-          <h1 className="mt-5 text-[38px] font-black leading-[1.24] text-[#0f172a] sm:text-[46px] lg:text-[54px]">
+          <h1 className="mt-5 text-3xl font-black leading-[1.24] text-[#0f172a] sm:text-[46px] lg:text-[54px]">
             {text.headline}
           </h1>
 
@@ -188,7 +188,7 @@ export function HeroSection() {
               className={buttonVariants({
                 size: "lg",
                 className:
-                  "min-h-12 bg-[#0e5f5c] px-8 shadow-[0_14px_28px_rgba(14,95,92,0.17)] hover:-translate-y-0.5 hover:bg-[#0a4f4c]",
+                  "min-h-12 w-full bg-[#0e5f5c] px-8 shadow-[0_14px_28px_rgba(14,95,92,0.17)] hover:-translate-y-0.5 hover:bg-[#0a4f4c] sm:w-auto",
               })}
               href="/courses"
             >
@@ -200,7 +200,7 @@ export function HeroSection() {
                 variant: "outline",
                 size: "lg",
                 className:
-                  "min-h-12 border-[#b8cac6] bg-white/78 px-8 text-[#0f172a] shadow-[0_10px_22px_rgba(15,23,42,0.04)] hover:border-[#0e5f5c]/40 hover:bg-white",
+                  "min-h-12 w-full border-[#b8cac6] bg-white/78 px-8 text-[#0f172a] shadow-[0_10px_22px_rgba(15,23,42,0.04)] hover:border-[#0e5f5c]/40 hover:bg-white sm:w-auto",
               })}
               href="/register"
             >

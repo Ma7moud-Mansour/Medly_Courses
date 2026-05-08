@@ -129,8 +129,8 @@ export function CourseCard({ course }: { course: CourseCardData }) {
           ) : null}
         </div>
 
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-5">
-          <div className="rounded-lg border border-[#dcebe7] bg-[#f5fbf9] px-4 py-3 shadow-[0_10px_24px_rgba(14,95,92,0.05)]">
+        <div className="mt-auto grid gap-3 pt-5 sm:flex sm:flex-wrap sm:items-end sm:justify-between">
+          <div className="w-full rounded-lg border border-[#dcebe7] bg-[#f5fbf9] px-4 py-3 shadow-[0_10px_24px_rgba(14,95,92,0.05)] sm:w-auto">
             <p className="text-xs font-bold text-[#5f6f6c]">سعر الكورس</p>
             <p className="mt-1 text-2xl font-black tracking-tight text-[#0f172a]">
               {formatCurrency(currentPrice)}
@@ -143,7 +143,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             ) : null}
           </div>
 
-          <div className="grid gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
             {course.isAccessible ? (
               <Link className={buttonVariants()} href={course.learningHref ?? `/learn/${course.slug}`}>
                 <PlayCircle className="h-4 w-4" />

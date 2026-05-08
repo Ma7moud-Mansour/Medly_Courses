@@ -83,10 +83,10 @@ export function Navbar() {
   return (
     <>
       <header data-no-translate className="site-nav-animated sticky top-0 z-40 border-b border-[#e8eeec] bg-white/95 backdrop-blur-xl">
-        <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+        <nav className="mx-auto flex h-14 w-full min-w-0 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
-              className="focus-ring rounded-lg p-2 text-foreground md:hidden"
+              className="focus-ring rounded-lg p-2 text-foreground xl:hidden"
               onClick={() => setMenuOpen((value) => !value)}
               aria-label={text.openMenu}
             >
@@ -97,11 +97,11 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="hidden min-w-0 items-center gap-1 xl:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#506662] transition duration-200 hover:bg-[#f2f6f4] hover:text-[#0e5f5c]"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-bold text-[#506662] transition duration-200 hover:bg-[#f2f6f4] hover:text-[#0e5f5c] 2xl:px-3"
                 href={item.href}
                 data-nav-link
               >
@@ -111,12 +111,12 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1">
-            <div className="hidden md:block">
+          <div className="flex min-w-0 items-center gap-1">
+            <div className="hidden xl:block">
               <LanguageSwitcher />
             </div>
             <button
-              className="focus-ring hidden h-8 w-8 items-center justify-center rounded-lg border border-[#e8eeec] bg-white text-[#5f6f6c] transition duration-200 hover:bg-[#f2f6f4] hover:text-[#0f172a] md:inline-flex"
+              className="focus-ring hidden h-8 w-8 items-center justify-center rounded-lg border border-[#e8eeec] bg-white text-[#5f6f6c] transition duration-200 hover:bg-[#f2f6f4] hover:text-[#0f172a] xl:inline-flex"
               onClick={() => setSearchOpen(true)}
               aria-label={text.search}
             >
@@ -143,7 +143,7 @@ export function Navbar() {
                       variant: "outline",
                       size: "sm",
                       className:
-                        "hidden min-h-8 border-[#cbd8d5] bg-white px-4 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] sm:inline-flex",
+                        "hidden min-h-8 border-[#cbd8d5] bg-white px-3 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] xl:inline-flex 2xl:px-4",
                     })}
                     href={roleHomePath}
                   >
@@ -155,7 +155,7 @@ export function Navbar() {
                     {user.role === "admin" || user.role === "support" ? text.admin : text.dashboard}
                   </Link>
                   <LogoutButton
-                    className="hidden min-h-8 border-[#cbd8d5] bg-white px-4 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] sm:inline-flex"
+                    className="hidden min-h-8 border-[#cbd8d5] bg-white px-3 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] xl:inline-flex 2xl:px-4"
                     label={text.logout}
                     redirectTo="/login"
                   />
@@ -167,7 +167,7 @@ export function Navbar() {
                       variant: "outline",
                       size: "sm",
                       className:
-                        "hidden min-h-8 border-[#cbd8d5] bg-white px-4 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] sm:inline-flex",
+                        "hidden min-h-8 border-[#cbd8d5] bg-white px-3 text-[#0f172a] hover:border-[#0e5f5c]/35 hover:bg-[#f2f8f6] xl:inline-flex 2xl:px-4",
                     })}
                     href="/login"
                   >
@@ -177,7 +177,7 @@ export function Navbar() {
                     className={buttonVariants({
                       size: "sm",
                       className:
-                        "hidden min-h-8 bg-[#0e5f5c] px-4 shadow-[0_10px_20px_rgba(14,95,92,0.12)] hover:-translate-y-0.5 hover:bg-[#0a4f4c] sm:inline-flex",
+                        "hidden min-h-8 bg-[#0e5f5c] px-3 shadow-[0_10px_20px_rgba(14,95,92,0.12)] hover:-translate-y-0.5 hover:bg-[#0a4f4c] xl:inline-flex 2xl:px-4",
                     })}
                     href="/register"
                   >
@@ -186,12 +186,12 @@ export function Navbar() {
                 </>
               )
             ) : (
-              <div className="hidden h-8 w-36 rounded-lg bg-[#f2f6f4] sm:block" />
+              <div className="hidden h-8 w-36 rounded-lg bg-[#f2f6f4] xl:block" />
             )}
           </div>
         </nav>
 
-        <div className={cn("border-t border-border bg-surface md:hidden", !menuOpen && "hidden")}>
+        <div className={cn("border-t border-border bg-surface xl:hidden", !menuOpen && "hidden")}>
           <div className="mobile-menu-panel mx-auto grid max-w-7xl gap-2 px-4 py-4">
             <LanguageSwitcher />
             {navItems.map((item) => (

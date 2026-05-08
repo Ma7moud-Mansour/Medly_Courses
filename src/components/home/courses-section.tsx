@@ -136,7 +136,7 @@ function LandingCourseCard({ course }: { course: CourseListItem }) {
           <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#5f6f6c]">{instructorSummary}</p>
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-[#edf3f1] pt-4 text-sm">
+        <div className="mt-5 grid gap-3 border-t border-[#edf3f1] pt-4 text-sm sm:flex sm:items-center sm:justify-between">
           <span className="inline-flex items-center gap-2 font-bold text-[#536a66]">
             <Clock className="h-4 w-4 text-[#0e5f5c]" />
             {course.durationHours} {text.hours}

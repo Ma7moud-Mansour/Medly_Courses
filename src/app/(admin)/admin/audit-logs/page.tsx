@@ -23,8 +23,8 @@ export default async function AdminAuditLogsPage() {
         </p>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
-        <table className="w-full text-right text-sm">
+      <section className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
+        <table className="w-full min-w-[760px] text-right text-sm">
           <thead className="bg-muted">
             <tr>
               <th className="p-4">الإجراء</th>

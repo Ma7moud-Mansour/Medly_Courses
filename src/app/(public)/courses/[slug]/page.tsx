@@ -66,8 +66,8 @@ export default async function CourseDetailsPage({ params }: { params: Params }) 
   return (
     <>
       <CourseHero course={details.course} />
-      <Container className="grid gap-10 py-10 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-12 lg:col-start-1 lg:row-start-1">
+      <Container className="grid gap-8 py-8 lg:gap-10 lg:py-10 xl:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]">
+        <div className="min-w-0 space-y-10 lg:space-y-12 xl:col-start-1 xl:row-start-1">
           <section>
             <SectionHeader
               title="ماذا ستحصل من الكورس"
@@ -119,7 +119,7 @@ export default async function CourseDetailsPage({ params }: { params: Params }) 
             </div>
           </section>
         </div>
-        <div className="row-start-1 lg:col-start-2 lg:row-start-1">
+        <div className="row-start-1 min-w-0 xl:col-start-2 xl:row-start-1">
           <PurchaseCard course={details.course} />
         </div>
       </Container>

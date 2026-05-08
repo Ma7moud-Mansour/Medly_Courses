@@ -58,8 +58,8 @@ export default async function InstructorDetailsPage({ params }: { params: Params
   return (
     <>
       <PageHeader title={details.instructor.name} subtitle={details.instructor.bio} />
-      <Container className="grid gap-8 py-10 lg:grid-cols-[280px_1fr]">
-        <aside className="rounded-lg border border-border bg-surface p-5">
+      <Container className="grid gap-6 py-8 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:gap-8 lg:py-10">
+        <aside className="min-w-0 rounded-lg border border-border bg-surface p-5">
           <InstructorAvatar
             avatar={details.instructor.avatar}
             className="h-52 w-full"
@@ -77,7 +77,7 @@ export default async function InstructorDetailsPage({ params }: { params: Params
             <p className="font-bold">{details.instructor.rating}/5 تقييم</p>
           </div>
         </aside>
-        <div>
+        <div className="min-w-0">
           <h2 className="mb-5 text-2xl font-black">كورسات الدكتور</h2>
           {details.discovery.courses.length ? (
             <CourseGrid courses={details.discovery.courses} />

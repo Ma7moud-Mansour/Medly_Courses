@@ -27,7 +27,7 @@ export function SearchFilter() {
   const text = copy[language];
 
   return (
-    <section data-no-translate className="relative z-20 -mt-10">
+    <section data-no-translate className="relative z-20 -mt-10 hidden sm:block">
       <Container>
         <form
           action="/courses"

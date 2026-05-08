@@ -71,6 +71,15 @@ const copy = {
   },
 } as const;
 
+function getErrorCode(error: unknown) {
+  if (typeof error === "object" && error !== null && "code" in error) {
+    const code = (error as { code?: unknown }).code;
+    return typeof code === "string" ? code : undefined;
+  }
+
+  return undefined;
+}
+
 export function AuthForm({
   mode,
   redirectTo,
@@ -203,7 +212,7 @@ export function AuthForm({
           router.refresh();
         }, 1200);
       } catch (error) {
-        if ((error as any).code === "UNVERIFIED_EMAIL") {
+        if (getErrorCode(error) === "UNVERIFIED_EMAIL") {
           setNeedsVerification(true);
         }
         setSubmitError(error instanceof Error ? error.message : "حدث خطأ غير متوقع.");
@@ -354,14 +363,19 @@ export function AuthForm({
         ) : null}
 
         {mode === "login" ? (
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-bold">
-            <input
-              {...register("rememberMe")}
-              type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-[#0f766e] focus:ring-[#0f766e]"
-            />
-            تذكرني (30 يوم)
-          </label>
+          <div className="rounded-lg border border-border bg-muted/35 p-3">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-bold">
+              <input
+                {...register("rememberMe")}
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300 text-[#0f766e] focus:ring-[#0f766e]"
+              />
+              تذكرني (30 يوم)
+            </label>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              لو متعلم عليها، الدخول يفضل محفوظ 30 يوم. لو مش متعلم عليها، الجلسة تنتهي مع إغلاق المتصفح.
+            </p>
+          </div>
         ) : null}
 
         {mode === "register" || mode === "reset" ? (

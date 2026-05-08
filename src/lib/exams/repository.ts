@@ -486,6 +486,14 @@ export async function updateAdminExam(input: {
   });
 }
 
+export async function deleteAdminExam(input: { examId: string }) {
+  await prisma.exam.delete({
+    where: {
+      id: input.examId,
+    },
+  });
+}
+
 function parseOptions(input: {
   type: ExamQuestionType;
   optionsText?: string;

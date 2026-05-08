@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  setSessionCookie(response, token, expiresAt);
+  setSessionCookie(response, token, expiresAt, Boolean(parsed.data.rememberMe));
 
   return response;
 }

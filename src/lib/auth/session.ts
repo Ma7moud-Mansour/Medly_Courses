@@ -40,14 +40,15 @@ function getSigningKey() {
   return new TextEncoder().encode(secret);
 }
 
-function getSessionCookieOptions(expiresAt: Date) {
-  return {
+function getSessionCookieOptions(expiresAt: Date, persistent = true) {
+  const options = {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    expires: expiresAt,
   };
+
+  return persistent ? { ...options, expires: expiresAt } : options;
 }
 
 export function getSessionExpiryDate(rememberMe?: boolean) {
@@ -102,13 +103,18 @@ export async function verifySessionToken(token?: string) {
   }
 }
 
-export function setSessionCookie(response: NextResponse, token: string, expiresAt: Date) {
-  response.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions(expiresAt));
+export function setSessionCookie(
+  response: NextResponse,
+  token: string,
+  expiresAt: Date,
+  persistent = true,
+) {
+  response.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions(expiresAt, persistent));
 }
 
 export function clearSessionCookie(response: NextResponse) {
   response.cookies.set(SESSION_COOKIE_NAME, "", {
-    ...getSessionCookieOptions(new Date(0)),
+    ...getSessionCookieOptions(new Date(0), true),
     maxAge: 0,
   });
 }

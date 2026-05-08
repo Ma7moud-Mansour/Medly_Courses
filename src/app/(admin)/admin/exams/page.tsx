@@ -1,14 +1,47 @@
 import Link from "next/link";
-import { FileQuestion, PlusCircle, Timer } from "lucide-react";
+import { FileQuestion, PlusCircle, Timer, Trash2 } from "lucide-react";
+import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { requireServerRole } from "@/lib/auth/server-session";
+import { deleteAdminExamAction } from "@/lib/exams/actions";
 import { listAdminExams } from "@/lib/exams/repository";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminExamsPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+const flashMessages: Record<string, string> = {
+  "exam-deleted": "تم حذف الامتحان وكل الأسئلة والمحاولات المرتبطة به.",
+};
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function DeleteExamButton({ examId }: { examId: string }) {
+  return (
+    <form action={deleteAdminExamAction}>
+      <input name="examId" type="hidden" value={examId} />
+      <PendingSubmitButton
+        className="border-danger/30 px-3 py-2 text-xs text-danger hover:bg-danger/5"
+        pendingLabel="جاري حذف الامتحان..."
+        size="sm"
+        variant="outline"
+      >
+        <Trash2 className="h-4 w-4" />
+        حذف
+      </PendingSubmitButton>
+    </form>
+  );
+}
+
+export default async function AdminExamsPage({ searchParams }: { searchParams: SearchParams }) {
   await requireServerRole(["admin", "support"]);
+  const query = await searchParams;
+  const flash = first(query.flash);
+  const error = first(query.error);
   const exams = await listAdminExams();
   const published = exams.filter((exam) => exam.isPublished).length;
   const standalone = exams.filter((exam) => !exam.courseId).length;
@@ -46,6 +79,9 @@ export default async function AdminExamsPage() {
           </div>
         </div>
       </div>
+
+      {flash ? <ActionFeedbackBanner kind="success" message={flashMessages[flash] ?? "تم تنفيذ الإجراء بنجاح."} /> : null}
+      {error ? <ActionFeedbackBanner kind="error" message={error} /> : null}
 
       {exams.length ? (
         <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
@@ -88,9 +124,12 @@ export default async function AdminExamsPage() {
                     <StatusBadge label={exam.isPublished ? "منشور" : "مسودة"} tone={exam.isPublished ? "active" : "draft"} />
                   </td>
                   <td className="p-4">
-                    <Link className="font-black text-primary" href={`/admin/exams/${exam.id}/edit`}>
-                      فتح مساحة الامتحان
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Link className="font-black text-primary" href={`/admin/exams/${exam.id}/edit`}>
+                        فتح مساحة الامتحان
+                      </Link>
+                      <DeleteExamButton examId={exam.id} />
+                    </div>
                   </td>
                 </tr>
               ))}

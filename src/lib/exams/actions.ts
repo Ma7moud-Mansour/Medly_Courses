@@ -6,6 +6,7 @@ import { buildFeedbackPath, getActionErrorMessage } from "@/lib/actions/server-a
 import { requireServerRole, requireServerSession } from "@/lib/auth/server-session";
 import {
   createAdminExam,
+  deleteAdminExam,
   deleteExamQuestion,
   startExamAttempt,
   submitExamAttempt,
@@ -108,6 +109,31 @@ export async function updateAdminExamAction(formData: FormData) {
   } catch (error) {
     destination = buildFeedbackPath(editPath, {
       error: getActionErrorMessage(error, "Unable to save the exam settings."),
+    });
+  }
+
+  redirect(destination);
+}
+
+export async function deleteAdminExamAction(formData: FormData) {
+  await requireExamAdmin();
+  const examId = String(formData.get("examId") ?? "");
+  let destination = "/admin/exams";
+
+  try {
+    if (!examId) {
+      throw new Error("لم يتم تحديد الامتحان المطلوب حذفه.");
+    }
+
+    await deleteAdminExam({ examId });
+
+    revalidatePath("/admin/exams");
+    revalidatePath("/dashboard/exams");
+    revalidatePath(`/exams/${examId}`);
+    destination = buildFeedbackPath("/admin/exams", { flash: "exam-deleted" });
+  } catch (error) {
+    destination = buildFeedbackPath(examId ? `/admin/exams/${examId}/edit` : "/admin/exams", {
+      error: getActionErrorMessage(error, "تعذر حذف الامتحان الآن."),
     });
   }
 

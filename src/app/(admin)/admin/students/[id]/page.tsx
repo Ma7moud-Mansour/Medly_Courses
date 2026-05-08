@@ -39,10 +39,57 @@ function getTicketStatusLabel(status: "open" | "in_progress" | "resolved" | "clo
   return "مفتوح";
 }
 
-const booleanOptions = [
+type PermissionFieldName = "canTakeExam" | "canAccessLive" | "canDownloadVideos" | "hideAssignments" | "hideForum";
+type PermissionOption = { value: "inherit" | "true" | "false"; label: string };
+
+const allowDenyOptions: PermissionOption[] = [
   { value: "inherit", label: "الافتراضي" },
   { value: "true", label: "مسموح" },
   { value: "false", label: "ممنوع" },
+];
+
+const visibilityOptions: PermissionOption[] = [
+  { value: "inherit", label: "الافتراضي" },
+  { value: "false", label: "إظهار" },
+  { value: "true", label: "إخفاء" },
+];
+
+const permissionFields: Array<{
+  name: PermissionFieldName;
+  label: string;
+  helper: string;
+  options: PermissionOption[];
+}> = [
+  {
+    name: "canTakeExam",
+    label: "الامتحانات",
+    helper: "مسموح يخلّي الطالب يبدأ الامتحانات المنشورة. ممنوع يقفل الامتحانات للطالب ده فقط.",
+    options: allowDenyOptions,
+  },
+  {
+    name: "canAccessLive",
+    label: "البث المباشر",
+    helper: "تحكم فردي في دخول الطالب للمحاضرات أو البث المباشر بدون التأثير على باقي الطلاب.",
+    options: allowDenyOptions,
+  },
+  {
+    name: "canDownloadVideos",
+    label: "تحميل الفيديوهات",
+    helper: "مسموح يفتح التحميل للطالب. ممنوع يخلي المشاهدة فقط بدون تحميل.",
+    options: allowDenyOptions,
+  },
+  {
+    name: "hideAssignments",
+    label: "الواجبات",
+    helper: "اختار إخفاء لو عايز تخفي الواجبات عن الطالب ده فقط، أو إظهار لو عايز تفرض ظهورها.",
+    options: visibilityOptions,
+  },
+  {
+    name: "hideForum",
+    label: "المنتدى",
+    helper: "اختار إخفاء لو عايز تمنع ظهور المنتدى للطالب ده فقط، أو إظهار لو عايز تفرض ظهوره.",
+    options: visibilityOptions,
+  },
 ];
 
 const flashMessages: Record<string, string> = {
@@ -51,8 +98,8 @@ const flashMessages: Record<string, string> = {
   "block-user": "تم حظر الحساب.",
   "unblock-user": "تم فك حظر الحساب.",
   "reset-progress": "تمت إعادة ضبط التقدم.",
-  "start-impersonation": "بدأت جلسة الانتحال المؤقتة.",
-  "end-impersonation": "تم إنهاء جلسة الانتحال.",
+  "start-impersonation": "تم فتح وضع معاينة حساب الطالب.",
+  "end-impersonation": "تم إنهاء وضع معاينة حساب الطالب.",
   "update-overrides": "تم حفظ الصلاحيات الفردية.",
   "open-support-note": "تم فتح ملاحظة دعم جديدة.",
 };
@@ -104,7 +151,7 @@ export default async function AdminStudentDetailsPage({
             </div>
             {details.activeImpersonation?.isActive ? (
               <p className="mt-3 text-sm font-bold text-[#8a6a2f]">
-                توجد جلسة انتحال نشطة لهذا الطالب بدأت في{" "}
+                وضع معاينة حساب الطالب مفتوح حاليًا وبدأ في{" "}
                 {new Date(details.activeImpersonation.startedAt).toLocaleString("ar-EG")}
               </p>
             ) : null}
@@ -145,6 +192,9 @@ export default async function AdminStudentDetailsPage({
             <BookOpen className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-black">الوصول إلى الكورسات</h2>
           </div>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            فتح كورس هنا يعمل تسجيل فعلي للطالب، وسحب الوصول يخفي الكورس منه فورًا في حسابه.
+          </p>
 
           <div className="mt-4 grid gap-3">
             {details.enrollments.length ? (
@@ -210,6 +260,9 @@ export default async function AdminStudentDetailsPage({
             <PendingSubmitButton disabled={!availableCourses.length} pendingLabel="جارٍ فتح الكورس...">
               فتح الكورس
             </PendingSubmitButton>
+            <p className="text-xs leading-5 text-muted-foreground">
+              القائمة تعرض الكورسات المنشورة فقط والتي لا يملك الطالب وصولًا نشطًا لها بالفعل.
+            </p>
           </form>
         </article>
 
@@ -218,31 +271,32 @@ export default async function AdminStudentDetailsPage({
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-black">الصلاحيات الفردية</h2>
           </div>
+          <div className="mt-3 rounded-lg border border-[color:rgba(14,95,92,0.18)] bg-[#eef8f5] p-4 text-sm leading-7 text-[#16524c]">
+            <p className="font-black">يعني إيه الافتراضي؟</p>
+            <p>
+              الافتراضي يسيب الطالب ماشي على إعدادات المنصة العامة. أي اختيار تاني هنا بيكون استثناء للطالب ده فقط.
+            </p>
+          </div>
 
           <form action={performStudentAdminAction} className="mt-4 grid gap-3">
             <input name="studentId" type="hidden" value={details.user.id} />
             <input name="intent" type="hidden" value="update-overrides" />
 
-            {[
-              ["canTakeExam", "السماح بالامتحانات"],
-              ["canAccessLive", "السماح بالبث المباشر"],
-              ["canDownloadVideos", "السماح بتحميل الفيديو"],
-              ["hideAssignments", "إخفاء الواجبات"],
-              ["hideForum", "إخفاء المنتدى"],
-            ].map(([name, label]) => (
-              <label key={name} className="grid gap-2 text-sm font-bold">
-                {label}
+            {permissionFields.map((field) => (
+              <label key={field.name} className="grid gap-2 text-sm font-bold">
+                {field.label}
                 <select
                   className="form-input"
-                  defaultValue={String((details.overrides as Record<string, boolean | null | undefined> | undefined)?.[name] ?? "inherit")}
-                  name={name}
+                  defaultValue={String((details.overrides as Partial<Record<PermissionFieldName, boolean | null>> | undefined)?.[field.name] ?? "inherit")}
+                  name={field.name}
                 >
-                  {booleanOptions.map((option) => (
+                  {field.options.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
+                <span className="text-xs font-medium leading-5 text-muted-foreground">{field.helper}</span>
               </label>
             ))}
 
@@ -326,16 +380,44 @@ export default async function AdminStudentDetailsPage({
             <History className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-black">إجراءات سريعة وسجل حديث</h2>
           </div>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            كل زر هنا ينفذ إجراء حقيقي على حساب الطالب، ويتم تسجيله في السجل الموجود أسفل الأزرار.
+          </p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {details.user.status === "blocked" ? (
-              <ActionButton intent="unblock-user" label="فك الحظر" studentId={details.user.id} />
+              <ActionButton
+                helper="يرجع الحساب نشطًا ويسمح للطالب بتسجيل الدخول مرة أخرى."
+                intent="unblock-user"
+                label="فك الحظر"
+                studentId={details.user.id}
+              />
             ) : (
-              <ActionButton intent="block-user" label="حظر الحساب" studentId={details.user.id} />
+              <ActionButton
+                helper="يمنع تسجيل الدخول ويحذف جلسات الطالب المفتوحة."
+                intent="block-user"
+                label="حظر الحساب"
+                studentId={details.user.id}
+              />
             )}
-            <ActionButton intent="reset-progress" label="إعادة ضبط التقدم" studentId={details.user.id} />
-            <ActionButton intent="start-impersonation" label="بدء جلسة انتحال مؤقتة" studentId={details.user.id} />
-            <ActionButton intent="end-impersonation" label="إنهاء جلسة الانتحال" studentId={details.user.id} />
+            <ActionButton
+              helper="يمسح تقدمه داخل الكورسات المفتوحة له ويبدأ من جديد."
+              intent="reset-progress"
+              label="إعادة ضبط التقدم"
+              studentId={details.user.id}
+            />
+            <ActionButton
+              helper="يفتح وضع معاينة إداري لحساب الطالب لمراجعة ما يظهر له."
+              intent="start-impersonation"
+              label="معاينة حساب الطالب"
+              studentId={details.user.id}
+            />
+            <ActionButton
+              helper="يقفل وضع المعاينة الإداري لهذا الطالب."
+              intent="end-impersonation"
+              label="إنهاء المعاينة"
+              studentId={details.user.id}
+            />
           </div>
 
           <div className="mt-5 grid gap-3">
@@ -366,10 +448,12 @@ export default async function AdminStudentDetailsPage({
 }
 
 function ActionButton({
+  helper,
   intent,
   label,
   studentId,
 }: {
+  helper?: string;
   intent: string;
   label: string;
   studentId: string;
@@ -379,7 +463,10 @@ function ActionButton({
       <input name="studentId" type="hidden" value={studentId} />
       <input name="intent" type="hidden" value={intent} />
       <PendingSubmitButton className="w-full" pendingLabel="جارٍ الحفظ..." variant="outline">
-        {label}
+        <span className="grid gap-1 text-center">
+          <span>{label}</span>
+          {helper ? <span className="text-xs font-medium leading-5 text-muted-foreground">{helper}</span> : null}
+        </span>
       </PendingSubmitButton>
     </form>
   );

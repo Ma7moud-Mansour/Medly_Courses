@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { ActionFeedbackBanner } from "@/components/admin/action-feedback-banner";
 import { ExamForm } from "@/components/admin/exam-form";
 import { ExamQuestionManager } from "@/components/admin/exam-question-manager";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { requireServerRole } from "@/lib/auth/server-session";
+import { deleteAdminExamAction } from "@/lib/exams/actions";
 import { getAdminExamEditorData } from "@/lib/exams/repository";
 
 type Params = Promise<{ id: string }>;
@@ -17,6 +20,22 @@ const flashMessages: Record<string, string> = {
   "question-saved": "تم حفظ السؤال وتحديث مجموع الدرجات.",
   "question-deleted": "تم حذف السؤال وتحديث مجموع الدرجات.",
 };
+
+function DeleteExamButton({ examId }: { examId: string }) {
+  return (
+    <form action={deleteAdminExamAction}>
+      <input name="examId" type="hidden" value={examId} />
+      <PendingSubmitButton
+        className="border-danger/30 text-danger hover:bg-danger/5"
+        pendingLabel="جاري حذف الامتحان..."
+        variant="outline"
+      >
+        <Trash2 className="h-4 w-4" />
+        حذف الامتحان
+      </PendingSubmitButton>
+    </form>
+  );
+}
 
 export default async function EditAdminExamPage({
   params,
@@ -53,6 +72,7 @@ export default async function EditAdminExamPage({
             <Link className={buttonVariants({ variant: "outline" })} href="/admin/exams">
               العودة إلى الامتحانات
             </Link>
+            <DeleteExamButton examId={data.exam.id} />
           </div>
         </div>
       </div>

@@ -44,7 +44,7 @@ export function InstructorForm({
       {mode === "update" && instructor?.id ? <input name="instructorId" type="hidden" value={instructor.id} /> : null}
 
       <FormSection
-        description="الاسم والمعرّف الخاص بالدكتور على المنصة. الرابط (Slug) يجب أن يكون باللغة الإنجليزية بدون مسافات."
+        description="اكتب اسم الدكتور فقط. الرابط اختياري ولو سبته فاضي هيتعمل تلقائيًا بشكل مناسب."
         title="البيانات الأساسية"
       >
         <div className="grid gap-4 md:grid-cols-2">
@@ -70,13 +70,12 @@ export function InstructorForm({
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1.5 block font-bold text-muted-foreground">الرابط (Slug) *</span>
+            <span className="mb-1.5 block font-bold text-muted-foreground">الرابط (اختياري)</span>
             <input
-              required
               className="w-full rounded-lg border border-border bg-transparent px-3 py-2 outline-none focus:border-primary"
               defaultValue={instructor?.slug}
               name="slug"
-              placeholder="dr-mohamed"
+              placeholder="اتركه فارغًا لو عايز الرابط يتعمل تلقائيًا"
               type="text"
             />
           </label>

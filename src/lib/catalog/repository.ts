@@ -80,6 +80,36 @@ function normalizeValue(value?: string) {
   return trimmed ? trimmed : undefined;
 }
 
+function decodeRouteSlug(slug: string) {
+  let normalized = slug.trim();
+
+  for (let index = 0; index < 2; index += 1) {
+    try {
+      const decoded = decodeURIComponent(normalized).trim();
+
+      if (decoded === normalized) {
+        break;
+      }
+
+      normalized = decoded;
+    } catch {
+      break;
+    }
+  }
+
+  return normalized;
+}
+
+function getRouteSlugVariants(slug: string) {
+  const decoded = decodeRouteSlug(slug);
+
+  if (!decoded) {
+    return [];
+  }
+
+  return Array.from(new Set([decoded, decoded.replace(/\s+/g, "-"), decoded.replace(/-+/g, " ")]));
+}
+
 async function getPublishedCourseCountsByCategory(categoryIds: string[]) {
   if (!categoryIds.length) {
     return new Map<string, number>();
@@ -403,8 +433,16 @@ export async function getPublicInstructorDetailsBySlug(
   discoveryQuery: CourseDiscoveryQuery = {},
   viewer?: ViewerContext,
 ): Promise<InstructorDetailsView | undefined> {
-  const instructor = await prisma.instructor.findUnique({
-    where: { slug },
+  const slugVariants = getRouteSlugVariants(slug);
+
+  if (!slugVariants.length) {
+    return undefined;
+  }
+
+  const instructor = await prisma.instructor.findFirst({
+    where: {
+      OR: slugVariants.map((candidate) => ({ slug: candidate })),
+    },
     select: {
       id: true,
       name: true,
@@ -425,7 +463,7 @@ export async function getPublicInstructorDetailsBySlug(
     discoverPublicCourses(
       {
         ...discoveryQuery,
-        instructor: slug,
+        instructor: instructor.slug,
       },
       viewer,
     ),

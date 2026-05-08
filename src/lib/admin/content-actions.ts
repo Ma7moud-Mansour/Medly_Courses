@@ -82,6 +82,12 @@ function buildCourseSlug(slug: string | undefined, title: string) {
   return manualSlug ? base : `${base}-${Date.now().toString(36)}`;
 }
 
+function buildInstructorSlug(formData: FormData) {
+  const fallback = String(formData.get("nameEn") || formData.get("name") || "instructor");
+
+  return buildCourseSlug(getOptionalText(formData.get("slug")), fallback);
+}
+
 // Keep validation, role checks, and cache revalidation at the server boundary
 // so admin content mutations stay predictable and secure.
 async function requireContentAdmin() {
@@ -661,7 +667,7 @@ export async function createAdminInstructorAction(formData: FormData) {
     const parsed = adminInstructorSchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: formData.get("slug"),
+      slug: buildInstructorSlug(formData),
       title: formData.get("title"),
       titleEn: formData.get("titleEn"),
       avatar: formData.get("avatar"),
@@ -681,6 +687,7 @@ export async function createAdminInstructorAction(formData: FormData) {
     revalidatePath("/");
     revalidatePath("/courses");
     revalidatePath("/instructors");
+    revalidatePath(`/instructors/${parsed.slug}`);
     destination = buildFeedbackPath("/admin/instructors", { flash: "instructor-created" });
   } catch (error) {
     destination = buildFeedbackPath("/admin/instructors/new", {
@@ -701,7 +708,7 @@ export async function updateAdminInstructorAction(formData: FormData) {
     const parsed = adminInstructorSchema.parse({
       name: formData.get("name"),
       nameEn: formData.get("nameEn"),
-      slug: formData.get("slug"),
+      slug: buildInstructorSlug(formData),
       title: formData.get("title"),
       titleEn: formData.get("titleEn"),
       avatar: formData.get("avatar"),

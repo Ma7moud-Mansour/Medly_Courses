@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { CourseGrid } from "@/components/course/course-grid";
 import { InstructorAvatar } from "@/components/instructors/instructor-avatar";
 import { Container } from "@/components/layout/container";
@@ -10,6 +11,16 @@ import { getPublicInstructorDetailsBySlug } from "@/lib/catalog/repository";
 import { formatNumber } from "@/lib/utils";
 
 type Params = Promise<{ slug: string }>;
+
+export const dynamic = "force-dynamic";
+
+function normalizeRouteSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug).trim();
+  } catch {
+    return slug.trim();
+  }
+}
 
 async function getViewerContext() {
   const session = await getServerSessionUser();
@@ -26,14 +37,18 @@ async function getViewerContext() {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: routeSlug } = await params;
+  const slug = normalizeRouteSlug(routeSlug);
   const details = await getPublicInstructorDetailsBySlug(slug);
 
   return { title: details?.instructor.name ?? "دكتور غير موجود" };
 }
 
 export default async function InstructorDetailsPage({ params }: { params: Params }) {
-  const { slug } = await params;
+  await connection();
+
+  const { slug: routeSlug } = await params;
+  const slug = normalizeRouteSlug(routeSlug);
   const details = await getPublicInstructorDetailsBySlug(slug, {}, await getViewerContext());
 
   if (!details) {

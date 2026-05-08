@@ -9,7 +9,7 @@ export async function AdminHeader() {
 
   return (
     <header className="border-b border-border bg-surface px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex min-w-0 flex-col justify-between gap-4 xl:flex-row xl:items-center">
+      <div className="flex min-w-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-sm font-black text-primary">
             <ShieldCheck className="h-4 w-4" />
@@ -21,7 +21,7 @@ export async function AdminHeader() {
           </p>
         </div>
 
-        <div className="grid w-full gap-2 sm:flex sm:flex-wrap sm:items-center xl:w-auto xl:justify-end">
+        <div className="grid w-full gap-2 sm:flex sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
           <span className="rounded-lg bg-[#eef8f5] px-3 py-2 text-sm font-black text-primary">
             {session.user!.name}
           </span>

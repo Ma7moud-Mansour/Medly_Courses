@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#f6fbf8] xl:grid xl:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[#f6fbf8] lg:grid lg:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)]">
       <AdminSidebar />
       <div className="min-w-0">
         <AdminHeader />

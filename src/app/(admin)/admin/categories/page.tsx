@@ -41,14 +41,13 @@ export default async function AdminCategoriesPage({
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="text-lg font-black">إضافة تصنيف جديد</h2>
-        <form action={createAdminCategoryAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <form action={createAdminCategoryAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <input className="form-input" name="name" placeholder="اسم التصنيف" required />
           <input className="form-input" name="nameEn" placeholder="English name" />
-          <input className="form-input" name="slug" placeholder="slug" required />
-          <input className="form-input xl:col-span-2" name="description" placeholder="وصف اختياري" />
+          <input className="form-input md:col-span-2" name="description" placeholder="وصف اختياري" />
           <input className="form-input xl:col-span-2" name="descriptionEn" placeholder="English description" />
           <input className="form-input" name="icon" placeholder="icon اختياري" />
-          <div className="md:col-span-2 xl:col-span-6">
+          <div className="md:col-span-2 xl:col-span-4">
             <PendingSubmitButton pendingLabel="جاري الإضافة..." size="md">
               إضافة تصنيف
             </PendingSubmitButton>
@@ -63,7 +62,6 @@ export default async function AdminCategoriesPage({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-black">{category.name}</h2>
-                  <p className="mt-1 text-xs font-bold text-muted-foreground">{category.slug}</p>
                 </div>
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-muted text-primary">
                   <FolderOpen className="h-4 w-4" />
@@ -88,10 +86,10 @@ export default async function AdminCategoriesPage({
               </div>
               <form action={updateAdminCategoryAction} className="mt-5 grid gap-3">
                 <input name="categoryId" type="hidden" value={category.id} />
+                <input name="slug" type="hidden" value={category.slug} />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <input className="form-input" defaultValue={category.name} name="name" required />
                   <input className="form-input" defaultValue={category.nameEn} name="nameEn" placeholder="English name" />
-                  <input className="form-input" defaultValue={category.slug} name="slug" required />
                 </div>
                 <input className="form-input" defaultValue={category.description} name="description" placeholder="وصف التصنيف" />
                 <input

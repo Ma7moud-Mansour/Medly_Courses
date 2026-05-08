@@ -7,6 +7,8 @@ import {
   Download,
   ExternalLink,
   FileText,
+  Maximize2,
+  Minimize2,
   Shield,
   TestTube2,
 } from "lucide-react";
@@ -127,11 +129,13 @@ function VideoLessonContent({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const deviceIdRef = useRef<string | undefined>(undefined);
   const hadFullscreenRef = useRef(false);
+  const fullscreenSwitchingRef = useRef(false);
   const shouldResumePlaybackRef = useRef(false);
   const [sourceReady, setSourceReady] = useState(() => !isProtectedPlayback);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(() =>
     isProtectedPlayback ? "Preparing protected playback..." : null,
   );
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [protectionVisible, setProtectionVisible] = useState(false);
   const [protectionMessage, setProtectionMessage] = useState(PROTECTION_MESSAGE);
 
@@ -177,6 +181,26 @@ function VideoLessonContent({
       }
     }
   }, [reportEvent]);
+
+  const handlePlayerFullscreen = useCallback(async () => {
+    const playerElement = playerRef.current;
+
+    if (!playerElement) {
+      return;
+    }
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      await playerElement.requestFullscreen();
+      hadFullscreenRef.current = true;
+    } catch {
+      // Native fullscreen can be denied by the browser if it is not user-initiated.
+    }
+  }, []);
 
   useEffect(() => {
     if (!isProtectedPlayback) {
@@ -236,9 +260,29 @@ function VideoLessonContent({
 
     const handleFullscreenChange = () => {
       const activeFullscreenElement = document.fullscreenElement;
+      setIsFullscreen(activeFullscreenElement === playerRef.current);
+
+      if (activeFullscreenElement === videoRef.current && playerRef.current) {
+        hadFullscreenRef.current = true;
+        fullscreenSwitchingRef.current = true;
+
+        void document
+          .exitFullscreen()
+          .then(() => playerRef.current?.requestFullscreen())
+          .catch(() => undefined)
+          .finally(() => {
+            fullscreenSwitchingRef.current = false;
+          });
+
+        return;
+      }
 
       if (activeFullscreenElement === playerRef.current) {
         hadFullscreenRef.current = true;
+        return;
+      }
+
+      if (fullscreenSwitchingRef.current) {
         return;
       }
 
@@ -327,7 +371,7 @@ function VideoLessonContent({
   return (
     <div
       ref={playerRef}
-      className="relative overflow-hidden rounded-lg bg-black shadow-2xl select-none"
+      className="medly-video-player relative overflow-hidden rounded-lg bg-black shadow-2xl select-none"
       onContextMenu={(event) => {
         event.preventDefault();
         pauseProtectedPlayback("VIDEO_CONTEXT_MENU");
@@ -340,12 +384,23 @@ function VideoLessonContent({
       <VideoWatermarkOverlay watermark={watermark} />
       {blockedOverlay}
       {sourceUrl ? (
+        <button
+          aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+          className="absolute left-4 bottom-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-black/45 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/65 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+          onClick={handlePlayerFullscreen}
+          title={isFullscreen ? "Exit full screen" : "Full screen"}
+          type="button"
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+      ) : null}
+      {sourceUrl ? (
         isHtmlVideo ? (
           <video
             ref={videoRef}
-            className="aspect-video h-full w-full"
+            className="aspect-video h-full w-full object-contain"
             controls
-            controlsList="nodownload noplaybackrate noremoteplayback"
+            controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
             disablePictureInPicture
             disableRemotePlayback
             playsInline
@@ -360,7 +415,7 @@ function VideoLessonContent({
           />
         ) : (
           <iframe
-            allow="autoplay; fullscreen"
+            allow="autoplay"
             className="aspect-video h-full w-full"
             src={sourceUrl}
             title={lesson.title}

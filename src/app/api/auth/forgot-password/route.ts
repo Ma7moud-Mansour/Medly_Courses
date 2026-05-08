@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  requestPasswordResetChallenge,
-  resendEmailCodeChallenge,
-} from "@/lib/auth/email-auth";
+import { requestPasswordResetChallenge } from "@/lib/auth/email-auth";
 import { forgotPasswordSchema } from "@/lib/validators/schemas";
 
 export async function POST(request: Request) {
@@ -24,13 +21,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const challenge =
-      payload.intent === "resend"
-        ? await resendEmailCodeChallenge({
-            email: parsed.data.email,
-            purpose: "password_reset",
-          })
-        : await requestPasswordResetChallenge(parsed.data.email);
+    const challenge = await requestPasswordResetChallenge(parsed.data.email);
 
     return NextResponse.json({
       data: {

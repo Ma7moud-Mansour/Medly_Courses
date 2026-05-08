@@ -392,12 +392,10 @@ export async function requestPasswordResetChallenge(email: string) {
     where: { email: normalizedEmail },
     select: {
       id: true,
-      email: true,
-      passwordHash: true,
     },
   });
 
-  if (!user?.passwordHash) {
+  if (!user) {
     return {
       requiresVerification: true,
       email: normalizedEmail,

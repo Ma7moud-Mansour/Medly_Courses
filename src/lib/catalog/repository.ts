@@ -316,8 +316,16 @@ export async function getPublicCategoryDetailsBySlug(
   discoveryQuery: CourseDiscoveryQuery = {},
   viewer?: ViewerContext,
 ): Promise<CategoryDetailsView | undefined> {
-  const category = await prisma.category.findUnique({
-    where: { slug },
+  const slugVariants = getRouteSlugVariants(slug);
+
+  if (!slugVariants.length) {
+    return undefined;
+  }
+
+  const category = await prisma.category.findFirst({
+    where: {
+      OR: slugVariants.map((candidate) => ({ slug: candidate })),
+    },
     select: {
       id: true,
       name: true,
@@ -335,7 +343,7 @@ export async function getPublicCategoryDetailsBySlug(
   const discovery = await discoverPublicCourses(
     {
       ...discoveryQuery,
-      category: slug,
+      category: category.slug,
     },
     viewer,
   );

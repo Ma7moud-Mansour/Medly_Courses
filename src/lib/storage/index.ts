@@ -1,6 +1,8 @@
+import { createWriteStream } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { pipeline } from "node:stream/promises";
 import type {
   AdminUploadKind,
   StoredFileMetadata,
@@ -211,15 +213,14 @@ function localPublicUrl(input: { url?: string | null; storageKey?: string | null
   return `/uploads/${storageKey.replace(/^public\//, "").replace(/^\/+/, "")}`;
 }
 
-async function saveLocalFile(input: {
+async function createLocalAssetTarget(input: {
   file: {
-    arrayBuffer(): Promise<ArrayBuffer>;
     name: string;
     size: number;
     type: string;
   };
   kind: AdminUploadKind;
-}): Promise<UploadedAsset> {
+}) {
   const config = uploadConstraints[input.kind];
   const rootDirectory = config.visibility === "public" ? PUBLIC_UPLOADS_ROOT : PRIVATE_UPLOADS_ROOT;
   const timestamp = new Date();
@@ -237,22 +238,55 @@ async function saveLocalFile(input: {
   const visibilityPrefix = config.visibility === "public" ? "public" : "private";
   const storageKey = path.posix.join(visibilityPrefix, relativeDirectory, fileName);
   const filePath = path.join(targetDirectory, fileName);
-  const buffer = Buffer.from(await input.file.arrayBuffer());
-
-  await writeFile(filePath, buffer);
 
   return {
-    provider: "local",
-    fileName: input.file.name,
-    mimeType: input.file.type || "application/octet-stream",
-    fileSizeBytes: input.file.size,
-    storageKey,
-    url:
-      config.visibility === "public"
-        ? localPublicUrl({ storageKey }) ?? ""
-        : asProtectedUrl(storageKey),
-    isPublic: config.visibility === "public",
+    filePath,
+    asset: {
+      provider: "local",
+      fileName: input.file.name,
+      mimeType: input.file.type || "application/octet-stream",
+      fileSizeBytes: input.file.size,
+      storageKey,
+      url:
+        config.visibility === "public"
+          ? localPublicUrl({ storageKey }) ?? ""
+          : asProtectedUrl(storageKey),
+      isPublic: config.visibility === "public",
+    } satisfies UploadedAsset,
   };
+}
+
+async function saveLocalFile(input: {
+  file: {
+    arrayBuffer(): Promise<ArrayBuffer>;
+    name: string;
+    size: number;
+    type: string;
+  };
+  kind: AdminUploadKind;
+}): Promise<UploadedAsset> {
+  const target = await createLocalAssetTarget(input);
+  const buffer = Buffer.from(await input.file.arrayBuffer());
+
+  await writeFile(target.filePath, buffer);
+
+  return target.asset;
+}
+
+async function saveLocalStream(input: {
+  stream: AsyncIterable<Buffer | Uint8Array> | NodeJS.ReadableStream;
+  file: {
+    name: string;
+    size: number;
+    type: string;
+  };
+  kind: AdminUploadKind;
+}) {
+  const target = await createLocalAssetTarget(input);
+
+  await pipeline(input.stream, createWriteStream(target.filePath));
+
+  return target.asset;
 }
 
 async function deleteLocalFile(input: { storageKey?: string | null; url?: string | null }) {
@@ -327,6 +361,18 @@ export async function saveUploadedFile(input: {
   kind: AdminUploadKind;
 }) {
   return getStorageAdapter().saveFile(input);
+}
+
+export async function saveUploadedStream(input: {
+  stream: AsyncIterable<Buffer | Uint8Array> | NodeJS.ReadableStream;
+  file: {
+    name: string;
+    size: number;
+    type: string;
+  };
+  kind: AdminUploadKind;
+}) {
+  return saveLocalStream(input);
 }
 
 export async function deleteStoredAsset(input: { storageKey?: string | null; url?: string | null }) {

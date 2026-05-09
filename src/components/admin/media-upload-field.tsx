@@ -36,6 +36,9 @@ const KIND_ICONS = {
   receipt: FileText,
 } as const;
 
+const CHUNKED_UPLOAD_PROTOCOL = "medly-chunked-upload";
+const LARGE_UPLOAD_THRESHOLD_BYTES = 8 * 1024 * 1024;
+
 function formatBytes(bytes?: number) {
   if (!bytes) return "حجم غير معروف";
   if (bytes < 1024) return `${bytes} B`;
@@ -78,9 +81,11 @@ export function MediaUploadField({
     thumbnailUrl: current?.thumbnailUrl,
   });
   const [error, setError] = useState<string>();
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const Icon = KIND_ICONS[kind];
+  const isUploading = isPending || uploadProgress !== null;
   const canPreview = Boolean(asset.url && (asset.url.startsWith("/") || asset.url.startsWith("http")));
   const manualVideoUrl =
     kind === "video" && asset.url && asset.provider !== "local" && !asset.url.startsWith("medly-protected://")
@@ -89,29 +94,105 @@ export function MediaUploadField({
   const manualVideoProvider =
     kind === "video" && asset.provider && asset.provider !== "local" ? asset.provider : "custom";
 
+  const parseUploadResponse = async (response: Response) => {
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(payload?.error || `فشل رفع الملف. كود الخطأ: ${response.status}`);
+    }
+
+    if (!payload?.data) {
+      throw new Error("تم الرفع لكن لم تصل بيانات الملف.");
+    }
+
+    return payload;
+  };
+
+  const uploadFileOnce = async (file: File) => {
+    const formData = new FormData();
+    formData.append("kind", kind);
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/uploads", {
+      method: "POST",
+      body: formData,
+    });
+
+    return parseUploadResponse(response);
+  };
+
+  const uploadFileInChunks = async (file: File) => {
+    setUploadProgress(0);
+
+    const startResponse = await fetch("/api/admin/uploads", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-medly-upload-phase": "start",
+        "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
+      },
+      body: JSON.stringify({
+        kind,
+        fileName: file.name,
+        fileSizeBytes: file.size,
+        mimeType: file.type,
+      }),
+    });
+    const startPayload = await parseUploadResponse(startResponse);
+    const uploadId = String(startPayload.data.uploadId ?? "");
+    const chunkSizeBytes = Number(startPayload.data.chunkSizeBytes ?? 0);
+    const totalChunks = Number(startPayload.data.totalChunks ?? 0);
+
+    if (!uploadId || !chunkSizeBytes || !totalChunks) {
+      throw new Error("لم يبدأ رفع الفيديو بشكل صحيح.");
+    }
+
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+      const start = chunkIndex * chunkSizeBytes;
+      const end = Math.min(file.size, start + chunkSizeBytes);
+      const chunk = file.slice(start, end);
+      const chunkResponse = await fetch("/api/admin/uploads", {
+        method: "POST",
+        headers: {
+          "content-type": "application/octet-stream",
+          "x-medly-chunk-index": String(chunkIndex),
+          "x-medly-upload-id": uploadId,
+          "x-medly-upload-phase": "chunk",
+          "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
+        },
+        body: chunk,
+      });
+
+      await parseUploadResponse(chunkResponse);
+      setUploadProgress(Math.min(99, Math.round(((chunkIndex + 1) / totalChunks) * 100)));
+    }
+
+    const completeResponse = await fetch("/api/admin/uploads", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-medly-upload-phase": "complete",
+        "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
+      },
+      body: JSON.stringify({ uploadId }),
+    });
+    const completePayload = await parseUploadResponse(completeResponse);
+
+    setUploadProgress(100);
+
+    return completePayload;
+  };
+
   const uploadFile = (file: File) => {
     setError(undefined);
+    setUploadProgress(null);
 
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append("kind", kind);
-      formData.append("file", file);
-
       try {
-        const response = await fetch("/api/admin/uploads", {
-          method: "POST",
-          body: formData,
-        });
-
-        const payload = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(payload?.error || `فشل رفع الملف. كود الخطأ: ${response.status}`);
-        }
-
-        if (!payload?.data) {
-          throw new Error("تم الرفع لكن لم تصل بيانات الملف.");
-        }
+        const payload =
+          kind === "video" && file.size > LARGE_UPLOAD_THRESHOLD_BYTES
+            ? await uploadFileInChunks(file)
+            : await uploadFileOnce(file);
 
         setAsset({
           provider: payload.data.provider,
@@ -126,6 +207,7 @@ export function MediaUploadField({
       } catch (uploadError) {
         setError(uploadError instanceof Error ? uploadError.message : "فشل رفع الملف.");
       } finally {
+        setUploadProgress(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -171,7 +253,7 @@ export function MediaUploadField({
         <div
           data-upload-has-file={asset.url ? "true" : "false"}
           data-upload-required={required ? "true" : "false"}
-          data-upload-state={isPending ? "pending" : "idle"}
+          data-upload-state={isUploading ? "pending" : "idle"}
         >
           {asset.url ? (
             <div className="rounded-lg border border-border bg-[#fbfcfc] p-3 text-sm">
@@ -217,15 +299,30 @@ export function MediaUploadField({
             type="file"
           />
 
-          <Button onClick={() => fileInputRef.current?.click()} type="button" variant="outline">
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {isPending ? "جاري الرفع..." : asset.url ? "تغيير الملف" : "رفع ملف"}
+          <Button disabled={isUploading} onClick={() => fileInputRef.current?.click()} type="button" variant="outline">
+            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {isUploading
+              ? uploadProgress === null
+                ? "جاري الرفع..."
+                : `جاري الرفع ${uploadProgress}%`
+              : asset.url
+                ? "تغيير الملف"
+                : "رفع ملف"}
           </Button>
 
           {asset.fileName ? <span className="text-xs font-bold text-muted-foreground">{asset.fileName}</span> : null}
         </div>
 
-        {required && !asset.url && !isPending ? (
+        {uploadProgress !== null ? (
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${Math.max(4, uploadProgress)}%` }}
+            />
+          </div>
+        ) : null}
+
+        {required && !asset.url && !isUploading ? (
           <p className="text-xs font-bold text-danger">هذا الملف مطلوب قبل الحفظ.</p>
         ) : null}
         {error ? <p className="text-xs font-bold text-danger">{error}</p> : null}

@@ -33,7 +33,7 @@ export const config = {
     "/dashboard/:path*",
     "/checkout/:path*",
     "/learn/:path*",
-    "/api/admin/:path*",
+    "/api/admin/((?!uploads).*)",
     "/api/me/:path*",
     "/api/progress/:path*",
     "/api/wishlist/:path*",

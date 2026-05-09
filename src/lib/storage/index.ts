@@ -19,7 +19,7 @@ const uploadConstraints: Record<
   AdminUploadKind,
   {
     allowedMimeTypes: string[];
-    maxBytes: number;
+    maxBytes?: number;
     directory: string;
     visibility: "public" | "private";
   }
@@ -34,7 +34,6 @@ const uploadConstraints: Record<
       "video/x-msvideo",
       "video/mpeg",
     ],
-    maxBytes: 1024 * 1024 * 1024,
     directory: "videos",
     visibility: "private",
   },
@@ -80,6 +79,14 @@ const uploadConstraints: Record<
 
 function trimValue(value?: string | null) {
   return value?.trim() || undefined;
+}
+
+function normalizeBigIntValue(value?: number | bigint | null) {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  return typeof value === "bigint" ? value : BigInt(value);
 }
 
 function sanitizeBaseName(fileName: string) {
@@ -311,7 +318,7 @@ const localStorageAdapter: StorageAdapter = {
       ...input,
       fileName: trimValue(input.fileName),
       mimeType: trimValue(input.mimeType),
-      fileSizeBytes: input.fileSizeBytes,
+      fileSizeBytes: normalizeBigIntValue(input.fileSizeBytes),
       playbackUrl: input.playbackUrl.trim(),
       thumbnailUrl: trimValue(input.thumbnailUrl),
       storageKey: trimValue(input.storageKey),

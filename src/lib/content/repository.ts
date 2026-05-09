@@ -240,6 +240,14 @@ function toIso(value?: Date | null) {
   return value ? value.toISOString() : undefined;
 }
 
+function toSafeNumber(value?: number | bigint | null) {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  return typeof value === "bigint" ? Number(value) : value;
+}
+
 function toCourse(course: Pick<
   AdminCourseRecord,
   | "id"
@@ -304,7 +312,7 @@ function mapVideoAsset(
     providerAssetId: string | null;
     fileName: string | null;
     mimeType: string | null;
-    fileSizeBytes: number | null;
+    fileSizeBytes: number | bigint | null;
     playbackUrl: string;
     thumbnailUrl: string | null;
     durationSeconds: number | null;
@@ -323,7 +331,7 @@ function mapVideoAsset(
     providerAssetId: asset.providerAssetId ?? undefined,
     fileName: asset.fileName ?? undefined,
     mimeType: asset.mimeType ?? undefined,
-    fileSizeBytes: asset.fileSizeBytes ?? undefined,
+    fileSizeBytes: toSafeNumber(asset.fileSizeBytes),
     playbackUrl: resolveStoredAssetUrl({ url: asset.playbackUrl, storageKey: asset.storageKey }) ?? asset.playbackUrl,
     thumbnailUrl:
       resolveStoredAssetUrl({ url: asset.thumbnailUrl, storageKey: asset.storageKey }) ?? asset.thumbnailUrl ?? undefined,

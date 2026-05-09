@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Receipt type is not supported." }, { status: 415 });
   }
 
-  if (fileEntry.size > constraints.maxBytes) {
+  if (constraints.maxBytes && fileEntry.size > constraints.maxBytes) {
     return NextResponse.json({ error: "Receipt file is too large." }, { status: 413 });
   }
 

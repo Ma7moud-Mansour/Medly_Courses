@@ -13,7 +13,7 @@ export type StoredVideoMetadata = {
   provider: MediaProvider;
   fileName?: string;
   mimeType?: string;
-  fileSizeBytes?: number;
+  fileSizeBytes?: number | bigint;
   playbackUrl: string;
   thumbnailUrl?: string;
   durationSeconds?: number;

@@ -291,7 +291,7 @@ model LessonVideoAsset {
   providerAssetId  String?
   fileName         String?
   mimeType         String?
-  fileSizeBytes    Int?
+  fileSizeBytes    BigInt?
   playbackUrl      String
   thumbnailUrl     String?
   durationSeconds  Int?

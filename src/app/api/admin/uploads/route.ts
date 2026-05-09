@@ -21,7 +21,6 @@ const CHUNKED_UPLOAD_PROTOCOL = "medly-chunked-upload";
 const CHUNK_UPLOAD_ROOT = path.join(process.cwd(), "storage", "uploads", ".tmp");
 const CHUNK_UPLOAD_BYTES = 768 * 1024;
 const MAX_CHUNK_BYTES = 2 * 1024 * 1024;
-const MAX_CHUNK_COUNT = 4096;
 const CHUNK_UPLOAD_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 type ChunkUploadMeta = {
@@ -150,7 +149,7 @@ function validateUploadConstraints(input: { kind: AdminUploadKind; mimeType: str
     );
   }
 
-  if (input.fileSizeBytes > constraints.maxBytes) {
+  if (constraints.maxBytes && input.fileSizeBytes > constraints.maxBytes) {
     return NextResponse.json(
       {
         error: `حجم الملف أكبر من الحد المسموح (${Math.round(constraints.maxBytes / (1024 * 1024))}MB).`,
@@ -207,7 +206,7 @@ async function startChunkedUpload(request: Request) {
 
   const totalChunks = Math.ceil(fileSizeBytes / CHUNK_UPLOAD_BYTES);
 
-  if (totalChunks < 1 || totalChunks > MAX_CHUNK_COUNT) {
+  if (!Number.isSafeInteger(totalChunks) || totalChunks < 1) {
     return NextResponse.json({ error: "عدد أجزاء الفيديو غير مناسب لهذا السيرفر." }, { status: 413 });
   }
 

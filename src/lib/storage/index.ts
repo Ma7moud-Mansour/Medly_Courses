@@ -86,7 +86,7 @@ function normalizeBigIntValue(value?: number | bigint | null) {
     return undefined;
   }
 
-  return typeof value === "bigint" ? value : BigInt(value);
+  return Number(value);
 }
 
 function sanitizeBaseName(fileName: string) {

@@ -36,9 +36,6 @@ const KIND_ICONS = {
   receipt: FileText,
 } as const;
 
-const CHUNKED_UPLOAD_PROTOCOL = "medly-chunked-upload";
-const LARGE_UPLOAD_THRESHOLD_BYTES = 8 * 1024 * 1024;
-
 function formatBytes(bytes?: number) {
   if (!bytes) return "حجم غير معروف";
   if (bytes < 1024) return `${bytes} B`;
@@ -108,29 +105,12 @@ export function MediaUploadField({
     return payload;
   };
 
-  const uploadFileOnce = async (file: File) => {
-    const formData = new FormData();
-    formData.append("kind", kind);
-    formData.append("file", file);
-
-    const response = await fetch("/api/admin/uploads", {
-      method: "POST",
-      body: formData,
-    });
-
-    return parseUploadResponse(response);
-  };
-
-  const uploadFileInChunks = async (file: File) => {
+  const uploadFileDirectly = async (file: File) => {
     setUploadProgress(0);
 
-    const startResponse = await fetch("/api/admin/uploads", {
+    const presignResponse = await fetch("/api/admin/uploads/presign", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-medly-upload-phase": "start",
-        "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
-      },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
         kind,
         fileName: file.name,
@@ -138,49 +118,44 @@ export function MediaUploadField({
         mimeType: file.type,
       }),
     });
-    const startPayload = await parseUploadResponse(startResponse);
-    const uploadId = String(startPayload.data.uploadId ?? "");
-    const chunkSizeBytes = Number(startPayload.data.chunkSizeBytes ?? 0);
-    const totalChunks = Number(startPayload.data.totalChunks ?? 0);
 
-    if (!uploadId || !chunkSizeBytes || !totalChunks) {
-      throw new Error("لم يبدأ رفع الفيديو بشكل صحيح.");
+    const presignPayload = await parseUploadResponse(presignResponse);
+    const { presignedUrl, provider, url, storageKey, fileName, mimeType, fileSizeBytes } = presignPayload.data;
+
+    if (!presignedUrl) {
+      throw new Error("لم نتمكن من الحصول على رابط الرفع المباشر.");
     }
 
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
-      const start = chunkIndex * chunkSizeBytes;
-      const end = Math.min(file.size, start + chunkSizeBytes);
-      const chunk = file.slice(start, end);
-      const chunkResponse = await fetch("/api/admin/uploads", {
-        method: "POST",
-        headers: {
-          "content-type": "application/octet-stream",
-          "x-medly-chunk-index": String(chunkIndex),
-          "x-medly-upload-id": uploadId,
-          "x-medly-upload-phase": "chunk",
-          "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
-        },
-        body: chunk,
-      });
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.min(99, Math.round((event.loaded / event.total) * 100));
+          setUploadProgress(percentComplete);
+        }
+      };
 
-      await parseUploadResponse(chunkResponse);
-      setUploadProgress(Math.min(99, Math.round(((chunkIndex + 1) / totalChunks) * 100)));
-    }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadProgress(100);
+          resolve();
+        } else {
+          reject(new Error(`فشل رفع الملف. كود الخطأ: ${xhr.status}`));
+        }
+      };
 
-    const completeResponse = await fetch("/api/admin/uploads", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-medly-upload-phase": "complete",
-        "x-medly-upload-protocol": CHUNKED_UPLOAD_PROTOCOL,
-      },
-      body: JSON.stringify({ uploadId }),
+      xhr.onerror = () => reject(new Error("حدث خطأ أثناء رفع الملف. يرجى التأكد من اتصالك بالإنترنت."));
+      xhr.onabort = () => reject(new Error("تم إلغاء رفع الملف."));
+
+      xhr.open("PUT", presignedUrl, true);
+      if (mimeType) {
+        xhr.setRequestHeader("Content-Type", mimeType);
+      }
+      xhr.send(file);
     });
-    const completePayload = await parseUploadResponse(completeResponse);
 
-    setUploadProgress(100);
-
-    return completePayload;
+    return presignPayload;
   };
 
   const uploadFile = (file: File) => {
@@ -189,20 +164,17 @@ export function MediaUploadField({
 
     startTransition(async () => {
       try {
-        const payload =
-          kind === "video" && file.size > LARGE_UPLOAD_THRESHOLD_BYTES
-            ? await uploadFileInChunks(file)
-            : await uploadFileOnce(file);
+        const payload = await uploadFileDirectly(file);
 
         setAsset({
-          provider: payload.data.provider,
+          provider: payload.data.provider === "cloudflare-r2" ? "custom" : payload.data.provider,
           url: payload.data.url,
           storageKey: payload.data.storageKey,
           fileName: payload.data.fileName,
           mimeType: payload.data.mimeType,
           fileSizeBytes: payload.data.fileSizeBytes,
-          durationSeconds: payload.data.durationSeconds,
-          thumbnailUrl: payload.data.thumbnailUrl,
+          durationSeconds: undefined,
+          thumbnailUrl: undefined,
         });
       } catch (uploadError) {
         setError(uploadError instanceof Error ? uploadError.message : "فشل رفع الملف.");

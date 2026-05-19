@@ -21,6 +21,8 @@
     "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1050.0",
+    "@aws-sdk/s3-request-presigner": "^3.1050.0",
     "@hookform/resolvers": "^5.2.2",
     "@node-rs/argon2": "^2.0.2",
     "@prisma/adapter-pg": "^7.7.0",
@@ -44,11 +46,13 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.0",
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "postcss": "^8.5.15",
     "prisma": "^7.7.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.3.0",
     "typescript": "^5"
   }
 }

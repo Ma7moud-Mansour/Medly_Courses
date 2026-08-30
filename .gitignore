@@ -35,6 +35,10 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Runtime uploads containing private user content
+/storage/uploads/receipts/
+/storage/uploads/videos/
+
 # vercel
 .vercel
 
